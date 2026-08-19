@@ -1,329 +1,2257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KLE Academic Calendar Portal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#1F2A44;
-    --navy-deep:#141B2E;
-    --gold:#C9A227;
-    --paper:#F7F6F2;
-    --ink:#22262E;
-    --muted:#6B7180;
-    --line:#E4E1D8;
-    --sky:#3E6FA8;
-    --green:#2E7D32;
-    --card:#FFFFFF;
-    --radius:14px;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Academic Calendar Portal · KLE Technological University</title>
+  <meta name="description" content="Live academic calendar of events for KLE Technological University, Hubballi - working days, holidays, exam windows and one-click calendar subscription." />
+  <link rel="icon" href="assets/KLE_Logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0d1b3e;
+      --navy-2: #182b55;
+      --gold: #c9a84c;
+      --gold-2: #ead282;
+      --ink: #13203c;
+      --muted: #68758f;
+      --line: rgba(13, 27, 62, 0.12);
+      --paper: #ffffff;
+      --soft: #f5f1e8;
+      --wash: #eef3f8;
+      --green: #1f7a4d;
+      --red: #c24035;
+      --blue: #226da8;
+      --violet: #7251a5;
+      --amber: #8a6500;
+      --shadow: 0 18px 45px rgba(13, 27, 62, 0.12);
+    }
 
-  header.masthead{
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%);
-    color:#fff;
-    padding:28px 32px 22px;
-    border-bottom:4px solid var(--gold);
-  }
-  .masthead-inner{
-    max-width:1180px;margin:0 auto;
-    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  }
-  .brand{display:flex;align-items:center;gap:14px;}
-  .brand .mark{
-    width:44px;height:44px;border-radius:10px;
-    background:var(--gold);color:var(--navy-deep);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;
-  }
-  .brand h1{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin:0;letter-spacing:0.2px;}
-  .brand p{margin:2px 0 0;font-size:12.5px;color:#C7CEDE;}
-  #admin-badge{
-    display:none;align-items:center;gap:8px;
-    background:rgba(201,162,39,0.15);
-    border:1px solid var(--gold);
-    color:var(--gold);
-    padding:6px 14px;border-radius:999px;
-    font-size:12.5px;font-weight:600;
-  }
-  #admin-badge.show{display:flex;}
-  #admin-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Outfit, system-ui, sans-serif; color: var(--ink);
+      background: var(--soft); min-height: 100vh; padding-bottom: 44px;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: var(--blue); }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+    }
 
-  main{max-width:1180px;margin:0 auto;padding:28px 20px 60px;}
+    /* ---------- boot ---------- */
+    .loading {
+      position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+      background: var(--navy); color: white;
+    }
+    .loading.hidden { display: none; }
+    .loading-box { text-align: center; }
+    .loading-logo { font-family: "Cormorant Garamond", serif; font-size: 38px; font-weight: 600; }
+    .loading-logo span { color: var(--gold); font-style: italic; }
+    .loading-text {
+      margin-top: 12px; color: rgba(255,255,255,0.55); font-size: 12px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .loading-rings { position: relative; width: 86px; height: 86px; margin: 0 auto 18px; }
+    .loading-rings::before, .loading-rings::after {
+      content: ""; position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid transparent; border-top-color: var(--gold);
+      border-right-color: rgba(234,210,130,0.55); animation: spin 1.4s linear infinite;
+    }
+    .loading-rings::after {
+      inset: 12px; border-top-color: rgba(255,255,255,0.72);
+      animation-duration: 1.9s; animation-direction: reverse;
+    }
+    .loading-dot {
+      position: absolute; inset: 31px; border-radius: 50%; background: var(--gold);
+      box-shadow: 0 0 26px rgba(201,168,76,0.65); animation: pulse 1.25s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.78); opacity: 0.65; }
+      50% { transform: scale(1); opacity: 1; }
+    }
 
-  /* Instrument strip */
-  .strip{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;
-  }
-  @media (max-width:820px){ .strip{grid-template-columns:1fr;} }
-  .gauge{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:18px 20px;
-    opacity:0;transform:translateY(10px);
-    animation:rise 0.5s ease forwards;
-  }
-  .gauge:nth-child(1){animation-delay:.05s;}
-  .gauge:nth-child(2){animation-delay:.15s;}
-  .gauge:nth-child(3){animation-delay:.25s;}
-  @keyframes rise{to{opacity:1;transform:translateY(0);}}
-  .gauge .label{
-    font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
-    font-weight:600;margin-bottom:8px;
-  }
-  .gauge .value{
-    font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:var(--navy);
-    display:flex;align-items:baseline;gap:8px;
-  }
-  .gauge .sub{font-size:12.5px;color:var(--muted);margin-top:6px;}
+    /* ---------- admin sign-in ---------- */
+    .login-screen {
+      position: fixed; inset: 0; z-index: 50; display: none; place-items: center;
+      background:
+        linear-gradient(135deg, rgba(13,27,62,0.96), rgba(24,43,85,0.92)),
+        radial-gradient(circle at 20% 20%, rgba(201,168,76,0.18), transparent 30%);
+      color: white; padding: 20px;
+    }
+    .login-screen.show { display: grid; }
+    .login-card {
+      width: min(440px, 100%); border: 1px solid rgba(201,168,76,0.32); border-radius: 10px;
+      background: rgba(255,255,255,0.08); box-shadow: 0 28px 70px rgba(0,0,0,0.24);
+      padding: 24px; backdrop-filter: blur(14px);
+    }
+    .login-title { font-family: "Cormorant Garamond", serif; font-size: 33px; line-height: 1.05; }
+    .login-title span { color: var(--gold-2); font-style: italic; }
+    .login-copy { color: rgba(255,255,255,0.62); margin: 10px 0 18px; line-height: 1.55; font-size: 13.5px; }
+    .login-card .field { width: 100%; background: rgba(255,255,255,0.95); }
+    .login-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+    .login-error { color: #ffb8b8; min-height: 18px; font-size: 13px; }
 
-  #clock-time{font-variant-numeric:tabular-nums;}
+    /* ---------- chrome ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 20; background: rgba(13, 27, 62, 0.96); color: white;
+      border-bottom: 1px solid rgba(201,168,76,0.24); backdrop-filter: blur(10px);
+    }
+    .topbar-inner {
+      max-width: 1240px; margin: 0 auto; padding: 11px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; min-width: 210px; }
+    .mark {
+      width: 58px; height: 58px; border: 1px solid rgba(201,168,76,0.7); display: grid; place-items: center;
+      color: var(--gold-2); font-family: "Cormorant Garamond", serif; font-size: 24px; font-weight: 600;
+      border-radius: 9px; overflow: hidden; flex: none;
+    }
+    .mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .mark.has-logo {
+      background: #ffffff; border-color: rgba(255,255,255,0.42); padding: 5px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.22);
+    }
+    /* a horizontal lockup must not be crushed into the square slot */
+    .mark.wide { width: auto; height: 54px; max-width: 210px; padding: 5px 10px; }
+    .mark.wide img { width: auto; height: 100%; max-width: 190px; }
+    .mark.has-logo .mono-mark { display: none; }
+    .brand-name { font-weight: 700; line-height: 1.05; font-size: 17px; }
+    .brand-sub {
+      color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-top: 3px;
+    }
+    .nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+    .nav button, .mode button, .icon-btn {
+      border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.82); min-height: 34px; border-radius: 8px; padding: 7px 11px; font-size: 13px;
+    }
+    .nav button.active, .mode button.active {
+      background: var(--gold); color: var(--navy); border-color: var(--gold); font-weight: 700;
+    }
+    .mode { display: flex; align-items: center; gap: 6px; }
+    /* the console is not advertised: #console / #admin / ?admin=1 reveals it */
+    #adminNav, #adminBtn, #logoutBtn, #reportNav { display: none; }
+    body.console-url #adminBtn { display: inline-flex; }
+    body.admin #adminBtn { display: none; }
+    body.admin #adminNav, body.admin #reportNav, body.admin #logoutBtn { display: inline-flex; }
 
-  .weather-row{display:flex;align-items:center;gap:12px;}
-  .umbrella-icon{
-    font-size:22px;line-height:1;
-    filter:drop-shadow(0 1px 1px rgba(0,0,0,0.1));
-  }
-  .umbrella-icon.rain{animation:pulse 1.8s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
-  .pill{
-    display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;
-    margin-top:8px;
-  }
-  .pill.rain{background:#E7F0FA;color:var(--sky);}
-  .pill.clear{background:#EAF4EA;color:var(--green);}
+    /* ---------- hero ---------- */
+    .hero {
+      background:
+        linear-gradient(90deg, rgba(13,27,62,0.97) 0%, rgba(13,27,62,0.9) 46%, rgba(24,43,85,0.75) 100%),
+        var(--navy);
+      color: white; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+      background-size: 48px 48px; mix-blend-mode: screen; opacity: 0.7;
+    }
+    .hero-inner {
+      position: relative; max-width: 1240px; margin: 0 auto; padding: 38px 18px 30px;
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, 360px); gap: 28px; align-items: center;
+    }
+    .eyebrow { color: var(--gold-2); letter-spacing: 0.14em; text-transform: uppercase; font-size: 11.5px; font-weight: 700; }
+    h1 {
+      font-family: "Cormorant Garamond", serif; font-size: clamp(32px, 5.4vw, 58px);
+      line-height: 0.98; margin: 10px 0; max-width: 780px;
+    }
+    h1 em { color: var(--gold-2); font-style: italic; }
+    .hero-copy { color: rgba(255,255,255,0.66); max-width: 660px; line-height: 1.6; font-size: 14.5px; }
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .hero-pill {
+      display: inline-flex; align-items: center; min-height: 28px; border: 1px solid rgba(234,210,130,0.3);
+      border-radius: 999px; padding: 6px 11px; color: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.05); font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em;
+    }
+    .live {
+      border: 1px solid rgba(201,168,76,0.3); padding: 18px; border-radius: 10px; min-width: 0;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)),
+        radial-gradient(circle at top right, rgba(201,168,76,0.18), transparent 48%);
+      box-shadow: 0 18px 46px rgba(0,0,0,0.18);
+    }
+    .live-label { color: rgba(255,255,255,0.5); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .live-value { margin-top: 6px; color: var(--gold-2); font-family: "JetBrains Mono", monospace; font-size: 13px; }
+    .live-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #37d47e;
+      margin-right: 7px; vertical-align: 1px; box-shadow: 0 0 0 3px rgba(55,212,126,0.22);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .live-dot.shut { background: #ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,0.22); }
+    .live-program {
+      margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12);
+      display: grid; gap: 9px; color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.4;
+    }
+    .live-program b { color: white; }
+    .live-row { display: flex; align-items: center; gap: 10px; }
+    .umbrella { font-size: 21px; line-height: 1; }
+    .umbrella.rain { animation: bob 1.8s ease-in-out infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    #clockTime { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
 
-  section.panel{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:22px 24px;margin-bottom:22px;
-    opacity:0;transform:translateY(10px);animation:rise 0.5s ease forwards;animation-delay:.3s;
-  }
-  section.panel h2{
-    font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 14px;color:var(--navy);
-    display:flex;align-items:center;gap:8px;
-  }
-  section.panel h2::before{
-    content:"";width:5px;height:16px;background:var(--gold);border-radius:3px;display:inline-block;
-  }
+    main { max-width: 1240px; margin: 0 auto; padding: 20px 18px 56px; }
 
-  table.week-table{width:100%;border-collapse:collapse;font-size:13.5px;}
-  table.week-table th{
-    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
-    color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line);
-  }
-  table.week-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;}
-  table.week-table tr:hover td{background:#FAFAF7;}
-  .day-chip{
-    display:inline-flex;align-items:center;justify-content:center;
-    width:26px;height:26px;border-radius:7px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
-    margin-right:3px;color:var(--ink);
-  }
-  .day-chip.H{background:#E4E1E1;color:#555;}
-  .day-chip.S{background:#DCE6F1;color:var(--sky);}
-  .day-chip.ME{background:#FCE4D6;color:#B45309;}
-  .day-chip.FB{background:#FFF2CC;color:#8A6D00;}
-  .day-chip.MD{background:#E2EFDA;color:var(--green);}
-  .day-chip.MK{background:#D9EAD3;color:var(--green);}
-  .day-chip.W{background:#F1F1EE;color:var(--ink);}
-  .events-cell{color:var(--muted);font-size:12.5px;line-height:1.5;white-space:pre-line;}
-  .wd-cell{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--navy);text-align:center;}
+    .notice {
+      border: 1px solid var(--gold); border-left-width: 5px; border-radius: 8px;
+      background: #fffaee; color: #6b5416; padding: 12px 14px; margin-bottom: 16px;
+      font-size: 13.5px; line-height: 1.5;
+    }
+    .notice.warn { border-color: var(--red); background: #fdecec; color: #8f2f27; }
+    .notice.good { border-color: var(--green); background: #f2f9f4; color: #14532d; }
+    .notice.hidden { display: none; }
+    .notice b { font-weight: 700; }
 
-  .loading, .error{padding:30px;text-align:center;color:var(--muted);font-size:13.5px;}
-  .error{color:#B3261E;}
+    /* ---------- KPI tiles ---------- */
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .kpi {
+      border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 15px;
+      min-height: 108px; box-shadow: 0 10px 26px rgba(13,27,62,0.07); position: relative; overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease; animation: riseIn 0.45s ease both;
+    }
+    .kpi::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--accent, var(--gold)); }
+    .kpi::after {
+      content: ""; position: absolute; width: 88px; height: 88px; right: -40px; bottom: -42px;
+      border-radius: 50%; background: color-mix(in srgb, var(--accent, var(--gold)) 15%, transparent);
+    }
+    @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .kpi-label { color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+    .kpi-value {
+      font-family: "Cormorant Garamond", serif; font-size: 40px; line-height: 1;
+      margin-top: 8px; color: var(--accent, var(--navy));
+    }
+    .kpi-value small { font-size: 15px; font-family: Outfit, sans-serif; color: var(--muted); }
+    .kpi-sub { color: var(--muted); font-size: 11.5px; margin-top: 5px; line-height: 1.35; }
 
-  footer{
-    text-align:center;padding:26px 20px;color:var(--muted);font-size:12px;
-    border-top:1px solid var(--line);
-  }
-</style>
+    /* ---------- panels ---------- */
+    .panel {
+      display: none; background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 18px;
+    }
+    .panel.active { display: block; }
+    .panel-head {
+      padding: 17px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between;
+      gap: 12px; align-items: center; flex-wrap: wrap; background: linear-gradient(180deg, #fff, #fbfaf7);
+    }
+    .panel-title { font-size: 19px; font-weight: 700; color: var(--navy); }
+    .panel-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .toolbar {
+      padding: 13px 18px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      border-bottom: 1px solid var(--line); background: #fbfcfd;
+    }
+    .toolbar .hint { color: var(--muted); font-size: 12.5px; }
+    .field {
+      border: 1px solid var(--line); background: white; border-radius: 8px; padding: 9px 11px;
+      min-height: 38px; color: var(--ink);
+    }
+    .field:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+    .field:disabled { background: #f4f6f9; color: var(--muted); }
+    .search { min-width: 220px; flex: 1; }
+    .primary {
+      border: 1px solid var(--gold); background: var(--gold); color: var(--navy);
+      border-radius: 8px; padding: 10px 14px; min-height: 38px; font-weight: 700;
+    }
+    .primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ghost {
+      border: 1px solid var(--line); background: white; color: var(--navy); border-radius: 8px;
+      padding: 8px 12px; min-height: 36px; font-weight: 600; font-size: 13px;
+    }
+    .ghost:hover { border-color: var(--gold); }
+    .ghost.small { min-height: 30px; padding: 4px 9px; font-size: 12px; }
+    .danger { border-color: #e6b3ae; color: var(--red); }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    /* ---------- week table ---------- */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th {
+      color: var(--muted); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+      background: #f7f9fb; position: sticky; top: 0; z-index: 1;
+    }
+    tbody tr:hover { background: #fbfcfd; }
+    .table-scroll { max-height: 68vh; overflow: auto; }
+    .empty { padding: 34px 18px; color: var(--muted); text-align: center; }
+    .mono { font-family: "JetBrains Mono", monospace; font-size: 11.5px; }
+    .weekno { font-family: "JetBrains Mono", monospace; font-weight: 600; color: var(--navy); }
+    tr.current-week { background: #fffdf3; box-shadow: inset 3px 0 0 var(--gold); }
+
+    .days { display: flex; gap: 4px; flex-wrap: wrap; }
+    .day {
+      width: 34px; min-height: 38px; border-radius: 6px; border: 1px solid var(--line);
+      display: grid; place-items: center; gap: 1px; padding: 3px 0;
+      font-family: "JetBrains Mono", monospace; font-size: 12.5px; font-weight: 600; color: var(--ink);
+    }
+    .day .dow { font-size: 8.5px; letter-spacing: 0.04em; opacity: 0.62; font-weight: 500; }
+    .day.blank { border-style: dashed; opacity: 0.35; }
+    .day.today { outline: 2px solid var(--gold); outline-offset: 1px; }
+    .events-cell { color: var(--ink); font-size: 12.5px; line-height: 1.55; }
+    .events-cell .ev { display: block; padding: 1px 0; }
+    .events-cell .ev-date { color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 11px; }
+    .wd { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--navy); text-align: center; }
+
+    /* ---------- legend ---------- */
+    .legend-wrap { padding: 14px 18px 18px; border-top: 1px solid var(--line); background: #fbfcfd; }
+    .legend-title {
+      color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .legend { display: flex; flex-wrap: wrap; gap: 9px; }
+    .legend-item {
+      display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line);
+      border-radius: 999px; padding: 5px 12px 5px 5px; background: white; font-size: 12.5px;
+    }
+    .legend-key {
+      display: inline-grid; place-items: center; min-width: 30px; height: 24px; border-radius: 999px;
+      font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 700;
+      border: 1px solid rgba(13,27,62,0.1);
+    }
+    .legend-item .count { color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 11px; }
+
+    /* ---------- charts ---------- */
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; padding: 18px; }
+    .chart-block { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: white; }
+    .chart-block h3 {
+      margin: 0; padding: 12px 14px; color: var(--navy); background: #f7f9fb;
+      border-bottom: 1px solid var(--line); font-size: 14px;
+    }
+    .chart-body { padding: 14px; display: grid; gap: 10px; }
+    .metric-row {
+      display: grid; grid-template-columns: minmax(112px, 1.2fr) 1.6fr auto; gap: 10px;
+      align-items: center; font-size: 12.5px;
+    }
+    .metric-track { height: 8px; border-radius: 999px; background: #edf1f6; overflow: hidden; }
+    .metric-fill { height: 100%; border-radius: inherit; background: var(--gold); transition: width 0.5s ease; }
+    .metric-row b { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+    .metric-row span { font-weight: 700; color: var(--navy); font-family: "JetBrains Mono", monospace; }
+    .columns { display: flex; align-items: flex-end; gap: 7px; height: 124px; padding: 4px 0; }
+    .column { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; text-align: center; }
+    .column .bar {
+      background: linear-gradient(180deg, var(--navy-2), var(--navy));
+      border-radius: 4px 4px 0 0; min-height: 3px; transition: height 0.5s ease;
+    }
+    .column .cap { font-size: 10.5px; color: var(--muted); }
+    .column .num { font-size: 11px; font-weight: 700; color: var(--navy); }
+    .progress-big { height: 14px; border-radius: 999px; background: #edf1f6; overflow: hidden; }
+    .progress-big div {
+      height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-2));
+      transition: width 0.6s ease;
+    }
+    .timeline-list { display: grid; gap: 9px; max-height: 300px; overflow: auto; }
+    .tl-item {
+      display: grid; grid-template-columns: 74px 1fr auto; gap: 11px; align-items: center;
+      border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: #fff;
+    }
+    .tl-when {
+      font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--navy);
+      background: var(--wash); border-radius: 6px; padding: 5px 6px; text-align: center; line-height: 1.3;
+    }
+    .tl-title { font-size: 13px; font-weight: 600; }
+    .tl-sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+    .tl-in { font-size: 11px; color: var(--muted); white-space: nowrap; font-family: "JetBrains Mono", monospace; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; font-size: 12.5px;
+      font-weight: 600; background: var(--wash); color: var(--navy);
+    }
+    .chip.good { background: #eef7f1; color: var(--green); }
+    .status {
+      display: inline-flex; border-radius: 999px; padding: 4px 9px; min-height: 23px; font-size: 10.5px;
+      font-weight: 700; background: #edf5ef; color: var(--green); white-space: nowrap;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .status.draft { background: #fff6df; color: var(--amber); }
+    .status.archive { background: #f1f3f6; color: var(--muted); }
+
+    /* ---------- guidelines / green ---------- */
+    .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(266px, 1fr)); gap: 16px; padding: 18px; }
+    .rule-card { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .rule-card h3 {
+      margin: 0; padding: 12px 14px; font-size: 14px; color: var(--navy);
+      background: #f7f9fb; border-bottom: 1px solid var(--line);
+    }
+    .rule-card ul { margin: 0; padding: 12px 14px 14px 30px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .rule-card li b { color: var(--ink); }
+    .rule-card.green { border-color: rgba(31,122,77,0.4); }
+    .rule-card.green h3 {
+      background: #edf7f0; color: #14532d; border-bottom-color: rgba(31,122,77,0.28);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .rule-card.green ul li::marker { color: var(--green); }
+    .leaf-note {
+      display: flex; align-items: flex-start; gap: 10px; margin: 0 18px 18px;
+      border: 1px solid rgba(31,122,77,0.35); border-left-width: 4px; border-radius: 8px;
+      background: #f2f9f4; padding: 12px 14px; color: #14532d; font-size: 13px; line-height: 1.55;
+    }
+    .leaf-note b { color: #0f3d21; }
+
+    /* ---------- admin console ---------- */
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; padding: 18px; }
+    .form-line { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .form-line .field { flex: 1; min-width: 120px; }
+    .stack { display: grid; gap: 8px; }
+    .stack label { display: grid; gap: 5px; color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .code-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+    .code-grid label { text-align: center; gap: 4px; }
+    .code-grid select { padding: 6px 4px; min-height: 34px; text-align: center; }
+    .scope-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .scope-switch button { border: 0; background: white; padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+    .scope-switch button.active { background: var(--navy); color: white; }
+    .audit-row { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+    .audit-row .when { color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 10.5px; }
+
+    /* ---------- dialogs / toasts ---------- */
+    dialog { border: 0; border-radius: 10px; box-shadow: var(--shadow); width: min(680px, calc(100vw - 26px)); padding: 0; }
+    dialog::backdrop { background: rgba(13,27,62,0.5); }
+    .modal-head {
+      padding: 15px 18px; color: white; background: var(--navy);
+      display: flex; justify-content: space-between; gap: 12px; align-items: center;
+    }
+    .modal-title { font-weight: 700; }
+    .modal-body { padding: 18px; display: grid; gap: 12px; }
+    .modal-body label { display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .modal-body p { margin: 0; line-height: 1.55; color: var(--ink); }
+    .modal-actions { padding: 0 18px 18px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .icon-btn { border-color: rgba(255,255,255,0.3); }
+    .toast-wrap {
+      position: fixed; right: 16px; bottom: 54px; z-index: 80; display: grid; gap: 10px;
+      width: min(380px, calc(100vw - 32px));
+    }
+    .toast {
+      border-radius: 8px; border: 1px solid rgba(13,27,62,0.12); background: white; box-shadow: var(--shadow);
+      padding: 12px 14px; display: grid; gap: 3px; animation: toastIn 0.25s ease both;
+    }
+    .toast-title { font-weight: 800; color: var(--navy); font-size: 13px; }
+    .toast-body { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .toast.error { border-left: 4px solid var(--red); }
+    .toast.success { border-left: 4px solid var(--green); }
+    .toast.info { border-left: 4px solid var(--blue); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ---------- printable report ---------- */
+    .pdf-report { margin: 18px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: white; }
+    .letterhead {
+      display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center;
+      padding: 22px 26px 18px; border-bottom: 3px solid var(--navy);
+    }
+    .letterhead-logo {
+      min-width: 92px; height: 92px; display: grid; place-items: center;
+      border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: #fff;
+    }
+    .letterhead-logo img { max-width: 200px; max-height: 100%; object-fit: contain; display: block; }
+    .letterhead-logo .fallback { font-family: "Cormorant Garamond", serif; font-size: 28px; font-weight: 600; color: var(--navy); }
+    .letterhead-inst { font-size: 19px; font-weight: 800; color: var(--navy); line-height: 1.25; }
+    .letterhead-unit { color: var(--muted); font-size: 12.5px; margin-top: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .letterhead-title { margin-top: 10px; font-family: "Cormorant Garamond", serif; font-size: 26px; line-height: 1.1; color: var(--ink); }
+    .letterhead-title em { font-style: italic; color: #8a6c1f; }
+    .doc-control { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .doc-control th, .doc-control td { border: 1px solid #dfe5ee; padding: 6px 9px; text-align: left; }
+    .doc-control th {
+      background: #f3f6fa; color: var(--muted); font-weight: 700; width: 15%;
+      text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px;
+    }
+    .exec-summary { border-left: 4px solid var(--gold); background: #fffdf6; padding: 14px 16px; font-size: 13px; line-height: 1.65; }
+    .exec-summary b { color: var(--navy); }
+    .report-kpis {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+      padding: 18px; background: #f7f9fb; border-bottom: 1px solid var(--line);
+    }
+    .report-kpi { border-radius: 8px; padding: 13px; color: white; background: var(--navy); min-height: 86px; }
+    .report-kpi:nth-child(2) { background: var(--blue); }
+    .report-kpi:nth-child(3) { background: var(--green); }
+    .report-kpi:nth-child(4) { background: var(--violet); }
+    .report-kpi-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .report-kpi-value { margin-top: 7px; font-family: "Cormorant Garamond", serif; font-size: 33px; line-height: 1; }
+    .report-section { padding: 16px 26px; break-inside: avoid; }
+    .report-section-title {
+      color: var(--navy); font-size: 15px; font-weight: 800; margin-bottom: 10px; padding-bottom: 7px;
+      border-bottom: 2px solid var(--gold); display: flex; align-items: baseline; gap: 9px;
+    }
+    .report-section-title .num { font-family: "JetBrains Mono", monospace; font-size: 12px; color: #8a6c1f; }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .report-table th { background: var(--navy); color: white; }
+    .report-table th, .report-table td { border: 1px solid #dfe5ee; padding: 6px 7px; vertical-align: top; }
+    .report-note { color: var(--muted); font-size: 11.5px; line-height: 1.5; margin-top: 9px; }
+    .signature-block { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; padding: 34px 26px 26px; break-inside: avoid; }
+    .sign-slot { border-top: 1px solid var(--ink); padding-top: 7px; font-size: 11.5px; color: var(--muted); }
+    .sign-slot b { display: block; color: var(--ink); font-size: 12.5px; margin-bottom: 2px; }
+    .report-end { text-align: center; color: var(--muted); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; padding: 6px 26px 22px; }
+
+    /* ---------- footer ---------- */
+    .footer {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; height: 40px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      background: var(--navy); color: rgba(255,255,255,0.68);
+      border-top: 1px solid rgba(201,168,76,0.24); font-size: 12px; padding: 0 12px; text-align: center;
+    }
+    .heart { color: #ff2f45; display: inline-block; animation: heartbeat 1.05s ease-in-out infinite; }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); } 16% { transform: scale(1.28); }
+      30% { transform: scale(0.94); } 44% { transform: scale(1.18); } 60% { transform: scale(1); }
+    }
+    .footer .sep { opacity: 0.35; }
+    #footerUpdated { color: var(--gold-2); font-family: "JetBrains Mono", monospace; font-size: 11px; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .topbar, .hero, .footer, .toast-wrap, .notice, .kpis,
+      .panel:not(#report), #report .panel-head { display: none !important; }
+      main { max-width: none; padding: 0; }
+      #report, .pdf-report { display: block !important; border: 0; box-shadow: none; margin: 0; }
+      .report-kpis, .report-kpi, .report-table th, .letterhead, .exec-summary, .doc-control th,
+      .report-table td { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .report-table thead { display: table-header-group; }
+      .report-table tr, .letterhead, .signature-block { break-inside: avoid; }
+      @page { size: A4 portrait; margin: 12mm 10mm; }
+    }
+
+    @media (max-width: 1040px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .live { max-width: 470px; }
+      .report-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+      .nav { justify-content: flex-start; }
+      h1 { font-size: clamp(28px, 9vw, 42px); }
+      .table-scroll { overflow-x: auto; }
+      table { min-width: 700px; }
+      .code-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .footer { font-size: 11px; height: auto; padding: 7px 10px; flex-wrap: wrap; }
+    }
+  </style>
 </head>
+
 <body>
+  <!--
+    ======================================================================
+    PUBLIC CLIENT - safe to publish on GitHub Pages.
+    No password, no API key, no sheet id lives in this file. Every write is
+    re-checked inside Apps Script (Code.gs) before anything is saved.
+    Paste your web-app /exec URL into GAS_URL below once, and deploy.
+    ======================================================================
+  -->
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzVZpAuJouLbIHVAHSHnzQ4L5P-4fPEJMrIzSKJtvLc11blSd2kGyDcanLHcBSxBmTv/exec";
+  </script>
 
-<header class="masthead">
-  <div class="masthead-inner">
-    <div class="brand">
-      <div class="mark">KLE</div>
-      <div>
-        <h1>Academic Calendar Portal</h1>
-        <p>Odd Semester 2026-27 &middot; Team CEER</p>
-      </div>
-    </div>
-    <div id="admin-badge"><span class="dot"></span><span id="admin-email">Admin</span></div>
-  </div>
-</header>
-
-<main>
-
-  <div class="strip">
-    <div class="gauge">
-      <div class="label">Today</div>
-      <div class="value"><span id="clock-date">--</span></div>
-      <div class="sub" id="clock-time">--:--:-- --</div>
-    </div>
-
-    <div class="gauge">
-      <div class="label">Hubballi Weather</div>
-      <div class="weather-row">
-        <span class="umbrella-icon" id="umbrella-icon">&#9925;</span>
-        <span class="value" id="weather-temp">--&deg;C</span>
-      </div>
-      <div id="weather-pill-wrap"></div>
-    </div>
-
-    <div class="gauge">
-      <div class="label">Sheet Last Modified</div>
-      <div class="value" style="font-size:18px;" id="last-modified">--</div>
-      <div class="sub">Source: Google Sheet backend</div>
+  <div class="loading" id="loading">
+    <div class="loading-box">
+      <div class="loading-rings"><div class="loading-dot"></div></div>
+      <div class="loading-logo">Academic <span>Calendar</span></div>
+      <div class="loading-text" id="loadingText">Reading the live sheet…</div>
     </div>
   </div>
 
-  <section class="panel">
-    <h2>Semester Calendar</h2>
-    <div id="calendar-wrap" class="loading">Loading calendar&hellip;</div>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-title">Administration <span>console</span></div>
+      <div class="login-copy">
+        Editing the calendar needs the admin password. It is verified inside Apps Script -
+        this page never holds it, and nothing here is stored in the repository.
+      </div>
+      <input class="field" type="password" id="loginPassword" placeholder="Admin password" autocomplete="current-password" />
+      <div class="login-actions">
+        <div class="login-error" id="loginError"></div>
+        <div class="row-actions">
+          <button class="ghost" id="loginCancel">Cancel</button>
+          <button class="primary" id="loginSubmit">Sign in</button>
+        </div>
+      </div>
+    </div>
   </section>
 
-</main>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="mark" id="brandMark"><span class="mono-mark">KLE</span></div>
+        <div>
+          <div class="brand-name" id="brandName">Academic Calendar Portal</div>
+          <div class="brand-sub" id="brandSub">KLE Technological University · Hubballi</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="active" data-panel="calendar">Calendar</button>
+        <button data-panel="dashboard">Dashboard</button>
+        <button data-panel="events">Events</button>
+        <button data-panel="holidays">Holidays</button>
+        <button data-panel="about">About</button>
+        <button data-panel="admin" id="adminNav">Console</button>
+        <button data-panel="report" id="reportNav">Report</button>
+      </nav>
+      <div class="mode">
+        <button id="adminBtn">Admin</button>
+        <button id="logoutBtn">Sign out</button>
+      </div>
+    </div>
+  </header>
 
-<footer>
-  KLE Technological University &middot; Centre for Engineering Education Research (CEER) &middot;
-  Data served live from Google Sheets via Apps Script
-</footer>
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow" id="eyebrow">Odd Semester 2026-27</div>
+        <h1>Calendar of <em>Events</em></h1>
+        <div class="hero-copy" id="heroCopy">
+          One link that stays current: working days counted by formula, holidays and exam
+          windows colour-coded, and every entry ready to drop into your own Google Calendar.
+        </div>
+        <div class="hero-pills" id="heroPills"></div>
+      </div>
 
-<script>
-// ---------- Configuration ----------
-// Paste your deployed Apps Script Web App URL here (ends in /exec).
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzVZpAuJouLbIHVAHSHnzQ4L5P-4fPEJMrIzSKJtvLc11blSd2kGyDcanLHcBSxBmTv/exec";
+      <div class="live">
+        <div class="live-label">Today</div>
+        <div class="live-value"><span class="live-dot" id="liveDot"></span><span id="clockDate">--</span> · <span id="clockTime">--:--:-- --</span></div>
+        <div class="live-program">
+          <div class="live-row">
+            <span class="umbrella" id="umbrella">&#9925;</span>
+            <div>
+              <b id="weatherTemp">--°C</b>
+              <div id="weatherNote" style="font-size:12px">Hubballi weather</div>
+            </div>
+          </div>
+          <div><b id="termStatus">Term status</b><div id="termStatusSub" style="font-size:12px">--</div></div>
+          <div style="font-size:12px">Sheet last modified <b id="lastModified">--</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-// ---------- Live clock ----------
-function pad(n){ return n.toString().padStart(2, "0"); }
-function formatDateTime(d){
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const dateStr = `${pad(d.getDate())}-${months[d.getMonth()]}-${d.getFullYear()}`;
-  let h = d.getHours();
-  const ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12; if(h === 0) h = 12;
-  const timeStr = `${pad(h)}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${ampm}`;
-  return { dateStr, timeStr };
-}
-function tickClock(){
-  const { dateStr, timeStr } = formatDateTime(new Date());
-  document.getElementById("clock-date").textContent = dateStr;
-  document.getElementById("clock-time").textContent = timeStr;
-}
-tickClock();
-setInterval(tickClock, 1000);
+  <main>
+    <div class="notice hidden" id="releaseBanner"></div>
+    <div class="notice warn hidden" id="setupNotice"></div>
+    <div class="notice hidden" id="snapshotNotice"></div>
 
-// ---------- Fetch helpers ----------
-async function callApi(action){
-  if (!GAS_URL || GAS_URL.startsWith("REPLACE")) return { error: "GAS_URL not configured" };
-  try{
-    const res = await fetch(`${GAS_URL}?action=${action}`);
-    return await res.json();
-  }catch(err){
-    return { error: String(err) };
-  }
-}
+    <div class="kpis" id="publicKpis"></div>
 
-// ---------- Weather ----------
-async function loadWeather(){
-  const data = await callApi("getweather");
-  const iconEl = document.getElementById("umbrella-icon");
-  const tempEl = document.getElementById("weather-temp");
-  const pillWrap = document.getElementById("weather-pill-wrap");
-  if (data.error){
-    tempEl.textContent = "N/A";
-    pillWrap.innerHTML = `<span class="sub">Weather unavailable</span>`;
-    return;
-  }
-  tempEl.textContent = `${data.tempC}\u00b0C`;
-  if (data.umbrella){
-    iconEl.textContent = "\u2614"; // umbrella with rain
-    iconEl.classList.add("rain");
-    pillWrap.innerHTML = `<span class="pill rain">Carry an umbrella &middot; ${data.description}</span>`;
-  } else {
-    iconEl.textContent = "\u2600"; // sun
-    iconEl.classList.remove("rain");
-    pillWrap.innerHTML = `<span class="pill clear">No rain expected &middot; ${data.description}</span>`;
-  }
-}
+    <!-- ============================ CALENDAR ============================ -->
+    <section id="calendar" class="panel active">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Semester calendar</div>
+          <div class="panel-sub" id="calendarSub">Week by week, straight from the sheet.</div>
+        </div>
+        <div class="row-actions">
+          <button class="ghost" data-action="refresh">Refresh</button>
+          <button class="ghost" id="icsAll">Add all events to my calendar (.ics)</button>
+          <button class="primary" data-action="report">Printable report</button>
+        </div>
+      </div>
 
-// ---------- Last modified ----------
-async function loadMeta(){
-  const data = await callApi("getmeta");
-  document.getElementById("last-modified").textContent = data.lastModified || "Unavailable";
-}
+      <div class="toolbar">
+        <input class="field search" id="calSearch" placeholder="Search an event, month or week" />
+        <select class="field" id="calFilter">
+          <option value="">All weeks</option>
+          <option value="upcoming">From this week on</option>
+          <option value="events">Weeks with events</option>
+          <option value="ME">Minor exam weeks</option>
+          <option value="H">Weeks with holidays</option>
+          <option value="FB">Feedback weeks</option>
+        </select>
+        <span class="hint" id="calCount"></span>
+      </div>
 
-// ---------- Admin badge ----------
-async function loadAdmin(){
-  const data = await callApi("checkadmin");
-  if (data.isAdmin){
-    document.getElementById("admin-email").textContent = data.email;
-    document.getElementById("admin-badge").classList.add("show");
-  }
-}
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:56px">Week</th>
+              <th style="width:86px">Month</th>
+              <th style="width:290px">Days</th>
+              <th style="width:74px">Working<br>days</th>
+              <th>Events</th>
+              <th style="width:150px">Add to calendar</th>
+            </tr>
+          </thead>
+          <tbody id="calendarRows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
 
-// ---------- Calendar table ----------
-const CODE_LABEL = {
-  H:"Holiday", S:"Sunday", ME:"Minor Exam", FB:"Feedback",
-  MD:"Marks/Attendance Display", MK:"Made-working day", IP:"Induction Program", W:"Working"
-};
+      <div class="legend-wrap">
+        <div class="legend-title">Legend · day types and what they count as</div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
 
-function fmtShortDate(dateVal){
-  if (!dateVal) return "";
-  const d = new Date(dateVal);
-  if (isNaN(d)) return "";
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${d.getDate()} ${months[d.getMonth()]}`;
-}
+    <!-- ============================ DASHBOARD =========================== -->
+    <section id="dashboard" class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Semester insights</div>
+          <div class="panel-sub" id="dashSub">Everything below is derived from the week grid, not typed by hand.</div>
+        </div>
+        <div class="row-actions">
+          <button class="ghost" data-action="refresh">Refresh</button>
+        </div>
+      </div>
 
-async function loadCalendar(){
-  const wrap = document.getElementById("calendar-wrap");
-  const data = await callApi("getcalendar");
-  if (data.error || !data.weeks){
-    wrap.className = "error";
-    wrap.textContent = "Could not load calendar data. Check GAS_URL and deployment access.";
-    return;
-  }
-  const dayLabels = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
-  let rows = "";
-  data.weeks.forEach(w => {
-    const chips = w.days.map((d, i) => {
-      if (!d.date) return "";
-      const code = d.code || "W";
-      const title = `${dayLabels[i]} ${fmtShortDate(d.date)} - ${CODE_LABEL[code] || code}`;
-      return `<span class="day-chip ${code}" title="${title}">${fmtShortDate(d.date).split(" ")[0]}</span>`;
-    }).join("");
-    rows += `<tr>
-      <td>${w.weekNo}</td>
-      <td>${chips}</td>
-      <td class="wd-cell">${w.workingDays}</td>
-      <td class="events-cell">${(w.events || "").replace(/</g,"&lt;")}</td>
-    </tr>`;
-  });
-  wrap.outerHTML = `<table class="week-table" id="calendar-wrap">
-    <thead><tr><th>Week</th><th>Days</th><th>Working Days</th><th>Events</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-}
+      <div class="kpis" id="dashKpis" style="padding:18px;margin:0"></div>
+      <div class="chart-grid" id="dashCharts"></div>
+      <div class="leaf-note" id="greenNote"></div>
+    </section>
 
-// ---------- Boot ----------
-loadWeather();
-loadMeta();
-loadAdmin();
-loadCalendar();
-</script>
+    <!-- ============================= EVENTS ============================= -->
+    <section id="events" class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Every dated event</div>
+          <div class="panel-sub">Each line of the circular, resolved to a real date. Add one, or take the whole term.</div>
+        </div>
+        <div class="row-actions">
+          <button class="ghost" id="icsAll2">Download .ics for the term</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input class="field search" id="evSearch" placeholder="Search events" />
+        <select class="field" id="evFilter">
+          <option value="upcoming">Upcoming only</option>
+          <option value="all">Whole semester</option>
+          <option value="past">Already done</option>
+        </select>
+        <span class="hint" id="evCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th style="width:150px">Date</th><th style="width:56px">Week</th><th>Event</th><th style="width:190px">Add to calendar</th></tr></thead>
+          <tbody id="eventRows"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
 
+    <!-- ============================ HOLIDAYS ============================ -->
+    <section id="holidays" class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Holiday list</div>
+          <div class="panel-sub">The institutional list the draft generator reads when it codes a new term.</div>
+        </div>
+        <div class="row-actions"><button class="ghost" data-action="refresh">Refresh</button></div>
+      </div>
+      <div class="toolbar">
+        <select class="field" id="holFilter">
+          <option value="term">Inside this term</option>
+          <option value="all">Full list</option>
+          <option value="upcoming">Upcoming</option>
+        </select>
+        <span class="hint" id="holCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th style="width:150px">Date</th><th style="width:96px">Day</th><th>Occasion</th><th style="width:110px">Applies to</th><th style="width:120px">In calendar</th></tr></thead>
+          <tbody id="holidayRows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================== ABOUT ============================= -->
+    <section id="about" class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">About this portal</div>
+          <div class="panel-sub">What it replaces, how a term rolls over, and where the numbers come from.</div>
+        </div>
+      </div>
+      <div class="rules">
+        <div class="rule-card">
+          <h3>What it is</h3>
+          <ul>
+            <li>A single sheet-backed calendar that <b>colour-codes holidays and exam windows</b> and computes working days by formula instead of by hand.</li>
+            <li>Faculty add dates to their own Google Calendar in one click, so a date change never has to be chased by circular.</li>
+            <li>The <b>sheet's last-modified stamp</b> is on the page, so nobody has to wonder whether they are reading an old copy.</li>
+          </ul>
+        </div>
+        <div class="rule-card">
+          <h3>One term at a time</h3>
+          <ul>
+            <li>This document is the <b>Odd Semester</b> calendar. An academic year also has an <b>Even Semester</b> (roughly January to June) published as its own calendar.</li>
+            <li>The portal always shows the <b>live</b> term. The next one is prepared alongside it as a <b>draft</b> and only replaces the live term when an admin publishes it.</li>
+            <li>Publishing archives the outgoing term - <b>nothing is deleted</b>, and past terms stay printable from the console.</li>
+          </ul>
+        </div>
+        <div class="rule-card">
+          <h3>Where the numbers come from</h3>
+          <ul>
+            <li>Each day carries a <b>type code</b> (working, holiday, Sunday, minor exam, feedback, marks display, made-working, induction, exam).</li>
+            <li>Working-day totals, the completion bar and the exam countdown are all counted from those codes - change a code, every number moves.</li>
+            <li>The legend under the calendar is the same list the sheet's colours and the printed report use, so a colour cannot mean two things.</li>
+          </ul>
+        </div>
+        <div class="rule-card green">
+          <h3>Paperless by design</h3>
+          <ul>
+            <li>The circular does not need reprinting when a date moves - the link is the document.</li>
+            <li>Reprints avoided are counted on the dashboard, in sheets and in trees.</li>
+            <li>Print only when a signed copy is genuinely required: the <b>Report</b> tab produces the formal, letterheaded version.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="leaf-note">
+        <div><b>Still printable.</b> The Report tab renders the whole term in the institutional format - letterhead, document control, legend and signature block - so a signed hard copy is one Ctrl+P away when it is actually needed.</div>
+      </div>
+    </section>
+
+
+    <!-- ============================= CONSOLE ============================ -->
+    <section id="admin" class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Administration console</div>
+          <div class="panel-sub" id="adminSub">Signed in. Every change is written straight to the sheet and logged.</div>
+        </div>
+        <div class="row-actions">
+          <button class="ghost" data-action="refresh">Refresh</button>
+          <button class="ghost" id="syncCalBtn">Sync shared calendar</button>
+          <button class="primary" data-action="report">Open report</button>
+        </div>
+      </div>
+
+      <div class="kpis" id="adminKpis" style="padding:18px;margin:0"></div>
+
+      <div class="toolbar">
+        <div class="scope-switch" id="scopeSwitch">
+          <button class="active" data-scope="live">Live term</button>
+          <button data-scope="draft">Draft term</button>
+        </div>
+        <button class="ghost" id="addWeekBtn">Add week</button>
+        <span class="hint" id="scopeHint"></span>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:56px">Week</th>
+              <th style="width:250px">Days</th>
+              <th style="width:70px">Working</th>
+              <th>Events</th>
+              <th style="width:160px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminRows"><tr><td colspan="5" class="empty">Sign in to load the grid.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="admin-grid">
+        <div class="chart-block">
+          <h3>Prepare the next term</h3>
+          <div class="chart-body">
+            <div class="form-line">
+              <input class="field" id="draftYear" placeholder="2026-27" style="max-width:120px" />
+              <select class="field" id="draftTerm" style="max-width:110px">
+                <option value="Odd">Odd</option>
+                <option value="Even">Even</option>
+              </select>
+            </div>
+            <div class="form-line">
+              <label style="flex:1;display:grid;gap:5px;font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase">Term starts
+                <input class="field" type="date" id="draftStart" />
+              </label>
+              <label style="flex:1;display:grid;gap:5px;font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase">Term ends
+                <input class="field" type="date" id="draftEnd" />
+              </label>
+            </div>
+            <button class="primary" id="genDraftBtn">Build the draft grid</button>
+            <div class="hintline" style="color:var(--muted);font-size:12px;line-height:1.5">
+              Every week between those dates is created, Sundays are coded <b>S</b> and any date on the
+              Holidays tab is coded <b>H</b> with its occasion written in. You then adjust exam and
+              feedback windows by hand - the tedious half is already done.
+            </div>
+            <div class="chips" id="draftChips"></div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <h3>Publish · roll the term over</h3>
+          <div class="chart-body">
+            <div class="hintline" style="color:var(--muted);font-size:12.5px;line-height:1.55">
+              Publishing archives the live term, promotes the draft into its place and raises a
+              release banner on the portal. Sheet names never change, so nothing downstream breaks.
+              An academic year is two of these: <b>Odd</b>, then <b>Even</b>.
+            </div>
+            <div id="publishState" class="chips"></div>
+            <button class="primary danger" id="publishBtn">Publish the draft</button>
+            <div class="hintline" style="color:var(--muted);font-size:12px">
+              Archived terms stay in the workbook as <span class="mono">Archive_&lt;year&gt;_&lt;term&gt;</span> and remain printable.
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <h3>Holidays</h3>
+          <div class="chart-body">
+            <div class="form-line">
+              <input class="field" type="date" id="holDate" style="flex:1;min-width:130px" />
+              <input class="field" id="holName" placeholder="Occasion" style="flex:2;min-width:130px" />
+              <button class="primary" id="holAdd">Save</button>
+            </div>
+            <div class="chips" id="holChips"></div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <h3>Portal settings</h3>
+          <div class="chart-body">
+            <div class="form-line">
+              <select class="field" id="setKey" style="flex:2;min-width:180px"></select>
+              <input class="field" id="setValue" placeholder="Value" style="flex:2;min-width:140px" />
+              <button class="primary" id="setSave">Save</button>
+            </div>
+            <div class="hintline" id="setHint" style="color:var(--muted);font-size:12px;line-height:1.5"></div>
+            <div class="hintline" style="color:var(--muted);font-size:12px">
+              The admin password is not a setting - rotate it with
+              <span class="mono">setAdminPassword("…")</span> in the Apps Script editor.
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <h3>Recent activity</h3>
+          <div class="chart-body" id="auditList" style="max-height:280px;overflow:auto"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== REPORT ============================ -->
+    <section id="report" class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Printable calendar of events</div>
+          <div class="panel-sub">The institutional format - letterhead, document control, legend and signatures.</div>
+        </div>
+        <div class="row-actions">
+          <button class="ghost" data-action="refresh">Refresh data</button>
+          <button class="primary" data-action="print">Print / Save as PDF</button>
+        </div>
+      </div>
+      <div class="pdf-report" id="pdfReport"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Made with</span>
+    <span class="heart">&#10084;</span>
+    <span>~rhc</span>
+    <span class="sep">·</span>
+    <span>CEER · KLE Technological University</span>
+    <span class="sep">·</span>
+    <span>Sheet updated <span id="footerUpdated">--</span></span>
+  </footer>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <dialog id="promptDialog">
+    <form method="dialog" id="promptForm">
+      <div class="modal-head">
+        <div class="modal-title" id="promptTitle">Confirm</div>
+        <button class="icon-btn" value="cancel" aria-label="Close" type="submit">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <p id="promptBody"></p>
+        <label id="promptFieldWrap"><span id="promptFieldLabel">Type to confirm</span>
+          <input class="field" id="promptField" maxlength="180" />
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" value="cancel" type="submit">Cancel</button>
+        <button class="primary" id="promptOk" value="ok" type="submit">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="weekDialog">
+    <form method="dialog" id="weekForm">
+      <div class="modal-head">
+        <div class="modal-title" id="weekDialogTitle">Edit week</div>
+        <button class="icon-btn" value="cancel" aria-label="Close" type="submit">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-line">
+          <label style="flex:1">Week number
+            <input class="field" id="weekNoInput" inputmode="numeric" />
+          </label>
+          <label style="flex:2">Monday of the week
+            <input class="field" type="date" id="weekMondayInput" />
+          </label>
+        </div>
+        <div>
+          <label style="margin-bottom:8px;display:block">Day types</label>
+          <div class="code-grid" id="codeGrid"></div>
+          <div style="color:var(--muted);font-size:11.5px;margin-top:8px;line-height:1.5">
+            Leave a day as <b>—</b> when the term does not cover it (the first and last weeks of a term
+            usually start or stop mid-week). Working days are recounted on save.
+          </div>
+        </div>
+        <label>Events · one per line, in the circular's own wording
+          <textarea class="field" id="weekEventsInput" rows="5" placeholder="Minor - 1: 15th, 16th &amp; 17th Oct"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" value="cancel" type="submit">Cancel</button>
+        <button class="primary" id="weekSave" value="ok" type="submit">Save week</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="eventDialog">
+    <form method="dialog" id="eventForm">
+      <div class="modal-head">
+        <div class="modal-title" id="eventDialogTitle">Event</div>
+        <button class="icon-btn" value="cancel" aria-label="Close" type="submit">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <label>Title
+          <input class="field" id="eventTitle" maxlength="140" placeholder="Class Committee Meeting-1" />
+        </label>
+        <div class="form-line">
+          <label style="flex:1">Starts
+            <input class="field" type="date" id="eventStart" />
+          </label>
+          <label style="flex:1">Ends (same day if blank)
+            <input class="field" type="date" id="eventEnd" />
+          </label>
+        </div>
+        <p style="color:var(--muted);font-size:12.5px">
+          Saved back into the week's Events cell as one line - "Title: 3rd &amp; 4th Oct" - so the
+          sheet still reads exactly like the printed circular.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" value="cancel" type="submit">Cancel</button>
+        <button class="primary" id="eventSave" value="ok" type="submit">Save event</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* =============================== state ============================== */
+
+    const state = {
+      config: {}, term: {}, weeks: [], holidays: [], meta: {}, banner: null,
+      draft: {}, draftWeeks: [], archives: [], audit: [], weather: null,
+      legend: [], token: "", adminOn: false, scope: "live", snapshot: false,
+    };
+
+    /* Embedded snapshot of the published term. Used only when the backend
+       cannot be reached, so the portal still shows a calendar instead of an
+       empty page - clearly flagged, never passed off as live. */
+    const SNAPSHOT = /*SNAPSHOT*/{"weeks":[{"weekNo":1,"month":"Sept","days":[{"label":"MON","date":null,"dayNum":null,"code":null},{"label":"TUE","date":"2026-09-01","dayNum":1,"code":"IP"},{"label":"WED","date":"2026-09-02","dayNum":2,"code":"IP"},{"label":"THU","date":"2026-09-03","dayNum":3,"code":"IP"},{"label":"FRI","date":"2026-09-04","dayNum":4,"code":"IP"},{"label":"SAT","date":"2026-09-05","dayNum":5,"code":"IP"},{"label":"SUN","date":"2026-09-06","dayNum":6,"code":"S"}],"events":"1st Sem Student Induction Program: 1st to 5th Sept"},{"weekNo":2,"month":"Sept","days":[{"label":"MON","date":"2026-09-07","dayNum":7,"code":"W"},{"label":"TUE","date":"2026-09-08","dayNum":8,"code":"W"},{"label":"WED","date":"2026-09-09","dayNum":9,"code":"W"},{"label":"THU","date":"2026-09-10","dayNum":10,"code":"W"},{"label":"FRI","date":"2026-09-11","dayNum":11,"code":"W"},{"label":"SAT","date":"2026-09-12","dayNum":12,"code":"W"},{"label":"SUN","date":"2026-09-13","dayNum":13,"code":"S"}],"events":"Registration Day: 7th Sept"},{"weekNo":3,"month":"Sept","days":[{"label":"MON","date":"2026-09-14","dayNum":14,"code":"H"},{"label":"TUE","date":"2026-09-15","dayNum":15,"code":"W"},{"label":"WED","date":"2026-09-16","dayNum":16,"code":"W"},{"label":"THU","date":"2026-09-17","dayNum":17,"code":"W"},{"label":"FRI","date":"2026-09-18","dayNum":18,"code":"W"},{"label":"SAT","date":"2026-09-19","dayNum":19,"code":"W"},{"label":"SUN","date":"2026-09-20","dayNum":20,"code":"S"}],"events":"Ganesh Chaturthi: 14th Sept\nLast date for the registration: 15th Sept"},{"weekNo":4,"month":"Sept","days":[{"label":"MON","date":"2026-09-21","dayNum":21,"code":"W"},{"label":"TUE","date":"2026-09-22","dayNum":22,"code":"W"},{"label":"WED","date":"2026-09-23","dayNum":23,"code":"W"},{"label":"THU","date":"2026-09-24","dayNum":24,"code":"W"},{"label":"FRI","date":"2026-09-25","dayNum":25,"code":"W"},{"label":"SAT","date":"2026-09-26","dayNum":26,"code":"W"},{"label":"SUN","date":"2026-09-27","dayNum":27,"code":"S"}],"events":""},{"weekNo":5,"month":"Sept/Oct","days":[{"label":"MON","date":"2026-09-28","dayNum":28,"code":"W"},{"label":"TUE","date":"2026-09-29","dayNum":29,"code":"W"},{"label":"WED","date":"2026-09-30","dayNum":30,"code":"W"},{"label":"THU","date":"2026-10-01","dayNum":1,"code":"W"},{"label":"FRI","date":"2026-10-02","dayNum":2,"code":"H"},{"label":"SAT","date":"2026-10-03","dayNum":3,"code":"W"},{"label":"SUN","date":"2026-10-04","dayNum":4,"code":"MK"}],"events":"Monthly attendance report: 1st Oct\nGandhi Jayanthi: 2nd Oct\nClass Committee Meeting-1: 3rd & 4th Oct\nWorking with Friday Time Table: 3rd Oct\nWorking with Saturday Time Table: 4th Oct"},{"weekNo":6,"month":"Oct","days":[{"label":"MON","date":"2026-10-05","dayNum":5,"code":"FB"},{"label":"TUE","date":"2026-10-06","dayNum":6,"code":"FB"},{"label":"WED","date":"2026-10-07","dayNum":7,"code":"FB"},{"label":"THU","date":"2026-10-08","dayNum":8,"code":"W"},{"label":"FRI","date":"2026-10-09","dayNum":9,"code":"W"},{"label":"SAT","date":"2026-10-10","dayNum":10,"code":"H"},{"label":"SUN","date":"2026-10-11","dayNum":11,"code":"S"}],"events":"Formative Feedback: 5th to 7th Oct\nMahalaya Amavasya: 10th Oct"},{"weekNo":7,"month":"Oct","days":[{"label":"MON","date":"2026-10-12","dayNum":12,"code":"W"},{"label":"TUE","date":"2026-10-13","dayNum":13,"code":"W"},{"label":"WED","date":"2026-10-14","dayNum":14,"code":"W"},{"label":"THU","date":"2026-10-15","dayNum":15,"code":"ME"},{"label":"FRI","date":"2026-10-16","dayNum":16,"code":"ME"},{"label":"SAT","date":"2026-10-17","dayNum":17,"code":"ME"},{"label":"SUN","date":"2026-10-18","dayNum":18,"code":"S"}],"events":"Minor - 1: 15th, 16th & 17th Oct"},{"weekNo":8,"month":"Oct","days":[{"label":"MON","date":"2026-10-19","dayNum":19,"code":"H"},{"label":"TUE","date":"2026-10-20","dayNum":20,"code":"H"},{"label":"WED","date":"2026-10-21","dayNum":21,"code":"H"},{"label":"THU","date":"2026-10-22","dayNum":22,"code":"W"},{"label":"FRI","date":"2026-10-23","dayNum":23,"code":"W"},{"label":"SAT","date":"2026-10-24","dayNum":24,"code":"W"},{"label":"SUN","date":"2026-10-25","dayNum":25,"code":"S"}],"events":"Compensatory Holiday: 19th Oct\nMahanavami Ayudha Pooja: 20th Oct\nVijaydashmi: 21st Oct\nStudent Counselling-1: 22nd to 28th Oct\nLast date for applying to Make-Up minor-1: 23rd Oct\nMake-Up Minor-1: 24th to 28th Oct"},{"weekNo":9,"month":"Oct/Nov","days":[{"label":"MON","date":"2026-10-26","dayNum":26,"code":"W"},{"label":"TUE","date":"2026-10-27","dayNum":27,"code":"W"},{"label":"WED","date":"2026-10-28","dayNum":28,"code":"W"},{"label":"THU","date":"2026-10-29","dayNum":29,"code":"MD"},{"label":"FRI","date":"2026-10-30","dayNum":30,"code":"W"},{"label":"SAT","date":"2026-10-31","dayNum":31,"code":"W"},{"label":"SUN","date":"2026-11-01","dayNum":1,"code":"S"}],"events":"Minor 1 Marks Display: 29th Oct"},{"weekNo":10,"month":"Nov","days":[{"label":"MON","date":"2026-11-02","dayNum":2,"code":"W"},{"label":"TUE","date":"2026-11-03","dayNum":3,"code":"W"},{"label":"WED","date":"2026-11-04","dayNum":4,"code":"W"},{"label":"THU","date":"2026-11-05","dayNum":5,"code":"W"},{"label":"FRI","date":"2026-11-06","dayNum":6,"code":"W"},{"label":"SAT","date":"2026-11-07","dayNum":7,"code":"W"},{"label":"SUN","date":"2026-11-08","dayNum":8,"code":"S"}],"events":"Monthly attendance report: 2nd Nov\nClass Committee Meeting-2: 2nd & 3rd Nov\nLast date for course(s) dropping: 3rd Nov"},{"weekNo":11,"month":"Nov","days":[{"label":"MON","date":"2026-11-09","dayNum":9,"code":"H"},{"label":"TUE","date":"2026-11-10","dayNum":10,"code":"H"},{"label":"WED","date":"2026-11-11","dayNum":11,"code":"W"},{"label":"THU","date":"2026-11-12","dayNum":12,"code":"W"},{"label":"FRI","date":"2026-11-13","dayNum":13,"code":"W"},{"label":"SAT","date":"2026-11-14","dayNum":14,"code":"W"},{"label":"SUN","date":"2026-11-15","dayNum":15,"code":"MK"}],"events":"Compensatory Holiday: 9th Nov\nDeepavali: 10th Nov\nWorking with Friday Time Table: 14th Nov\nWorking with Saturday Time Table: 15th Nov"},{"weekNo":12,"month":"Nov","days":[{"label":"MON","date":"2026-11-16","dayNum":16,"code":"W"},{"label":"TUE","date":"2026-11-17","dayNum":17,"code":"W"},{"label":"WED","date":"2026-11-18","dayNum":18,"code":"W"},{"label":"THU","date":"2026-11-19","dayNum":19,"code":"W"},{"label":"FRI","date":"2026-11-20","dayNum":20,"code":"W"},{"label":"SAT","date":"2026-11-21","dayNum":21,"code":"W"},{"label":"SUN","date":"2026-11-22","dayNum":22,"code":"S"}],"events":""},{"weekNo":13,"month":"Nov","days":[{"label":"MON","date":"2026-11-23","dayNum":23,"code":"FB"},{"label":"TUE","date":"2026-11-24","dayNum":24,"code":"FB"},{"label":"WED","date":"2026-11-25","dayNum":25,"code":"FB"},{"label":"THU","date":"2026-11-26","dayNum":26,"code":"W"},{"label":"FRI","date":"2026-11-27","dayNum":27,"code":"H"},{"label":"SAT","date":"2026-11-28","dayNum":28,"code":"W"},{"label":"SUN","date":"2026-11-29","dayNum":29,"code":"S"}],"events":"Summative Feedback: 23rd to 25th Nov\nKanakadasa Jayanthi: 27th Nov"},{"weekNo":14,"month":"Nov/Dec","days":[{"label":"MON","date":"2026-11-30","dayNum":30,"code":"W"},{"label":"TUE","date":"2026-12-01","dayNum":1,"code":"W"},{"label":"WED","date":"2026-12-02","dayNum":2,"code":"W"},{"label":"THU","date":"2026-12-03","dayNum":3,"code":"W"},{"label":"FRI","date":"2026-12-04","dayNum":4,"code":"W"},{"label":"SAT","date":"2026-12-05","dayNum":5,"code":"W"},{"label":"SUN","date":"2026-12-06","dayNum":6,"code":"S"}],"events":"Class Committee Meeting-3: 30th Nov & 1st Dec\nMonthly attendance report: 1st Dec"},{"weekNo":15,"month":"Dec","days":[{"label":"MON","date":"2026-12-07","dayNum":7,"code":"ME"},{"label":"TUE","date":"2026-12-08","dayNum":8,"code":"ME"},{"label":"WED","date":"2026-12-09","dayNum":9,"code":"ME"},{"label":"THU","date":"2026-12-10","dayNum":10,"code":"W"},{"label":"FRI","date":"2026-12-11","dayNum":11,"code":"W"},{"label":"SAT","date":"2026-12-12","dayNum":12,"code":"W"},{"label":"SUN","date":"2026-12-13","dayNum":13,"code":"S"}],"events":"Minor-2: 7th, 8th & 9th Dec\nLast date for applying to Make-Up minor-2: 11th Dec\nMake-Up Minor-2: 12th to 16th Dec"},{"weekNo":16,"month":"Dec","days":[{"label":"MON","date":"2026-12-14","dayNum":14,"code":"W"},{"label":"TUE","date":"2026-12-15","dayNum":15,"code":"W"},{"label":"WED","date":"2026-12-16","dayNum":16,"code":"W"},{"label":"THU","date":"2026-12-17","dayNum":17,"code":"MD"},{"label":"FRI","date":"2026-12-18","dayNum":18,"code":"W"},{"label":"SAT","date":"2026-12-19","dayNum":19,"code":"W"},{"label":"SUN","date":"2026-12-20","dayNum":20,"code":"S"}],"events":"Student Counselling-2: 14th to 19th Dec\nMinor 2 Marks Display: 17th Dec"},{"weekNo":17,"month":"Dec","days":[{"label":"MON","date":"2026-12-21","dayNum":21,"code":"W"},{"label":"TUE","date":"2026-12-22","dayNum":22,"code":"W"},{"label":"WED","date":"2026-12-23","dayNum":23,"code":"W"},{"label":"THU","date":"2026-12-24","dayNum":24,"code":"W"},{"label":"FRI","date":"2026-12-25","dayNum":25,"code":"H"},{"label":"SAT","date":"2026-12-26","dayNum":26,"code":"W"},{"label":"SUN","date":"2026-12-27","dayNum":27,"code":"S"}],"events":"Last date for course(s) withdrawal: 22nd Dec\nChristmas: 25th Dec"},{"weekNo":18,"month":"Dec","days":[{"label":"MON","date":"2026-12-28","dayNum":28,"code":"W"},{"label":"TUE","date":"2026-12-29","dayNum":29,"code":"MD"},{"label":"WED","date":null,"dayNum":null,"code":null},{"label":"THU","date":null,"dayNum":null,"code":null},{"label":"FRI","date":null,"dayNum":null,"code":null},{"label":"SAT","date":null,"dayNum":null,"code":null},{"label":"SUN","date":null,"dayNum":null,"code":null}],"events":"Final attendance / Marks display: 29th Dec"}],"holidays":[{"date":"2026-01-15","occasion":"Makara Shankranti","appliesTo":"All","remarks":""},{"date":"2026-01-26","occasion":"Republic Day","appliesTo":"All","remarks":""},{"date":"2026-03-07","occasion":"Holi","appliesTo":"All","remarks":""},{"date":"2026-03-19","occasion":"Ugadi-Gudi Padva","appliesTo":"All","remarks":""},{"date":"2026-03-20","occasion":"Comp off 1","appliesTo":"All","remarks":""},{"date":"2026-03-21","occasion":"Khutub-e-Ramzan","appliesTo":"All","remarks":""},{"date":"2026-03-30","occasion":"Mahaveer Jayanti","appliesTo":"All","remarks":""},{"date":"2026-04-03","occasion":"Good Friday","appliesTo":"All","remarks":""},{"date":"2026-04-14","occasion":"Ambedkar Jayanti","appliesTo":"All","remarks":""},{"date":"2026-04-20","occasion":"Basava Jayanti- Akshaya Tritiya","appliesTo":"All","remarks":""},{"date":"2026-05-01","occasion":"Labour Day","appliesTo":"All","remarks":""},{"date":"2026-05-28","occasion":"Bakrid","appliesTo":"All","remarks":""},{"date":"2026-06-26","occasion":"Muharram","appliesTo":"All","remarks":""},{"date":"2026-08-15","occasion":"Independence Day","appliesTo":"All","remarks":""},{"date":"2026-08-26","occasion":"Eid Milad","appliesTo":"All","remarks":""},{"date":"2026-09-14","occasion":"Varasiddi Ganesha Chaturti","appliesTo":"All","remarks":""},{"date":"2026-10-02","occasion":"Gandhi Jayanti","appliesTo":"All","remarks":""},{"date":"2026-10-20","occasion":"Mahanavami","appliesTo":"All","remarks":""},{"date":"2026-10-21","occasion":"Vijayadashami","appliesTo":"All","remarks":""},{"date":"2026-11-10","occasion":"Deepavali","appliesTo":"All","remarks":""},{"date":"2026-11-27","occasion":"Kanakadasa jayanti","appliesTo":"All","remarks":""},{"date":"2026-12-25","occasion":"Christmas","appliesTo":"All","remarks":""}]}/*END*/;
+
+    /* Mirrors DAY_TYPES in Code.gs. The backend overrides this on bootstrap;
+       it exists so colours and labels are right in snapshot mode too. */
+    const DEFAULT_LEGEND = [
+      { code: "W",  label: "Working day",                color: "#FFFFFF", ink: "#13203C", working: true,  teaching: true },
+      { code: "H",  label: "Holiday",                    color: "#D9D9D9", ink: "#3F3F3F", working: false, teaching: false },
+      { code: "S",  label: "Sunday (non-working)",       color: "#DCE6F1", ink: "#1F4E79", working: false, teaching: false },
+      { code: "ME", label: "Minor exam",                 color: "#FCE4D6", ink: "#943706", working: true,  teaching: false },
+      { code: "FB", label: "Feedback",                   color: "#FFF2CC", ink: "#7F6000", working: true,  teaching: true },
+      { code: "MD", label: "Marks / attendance display", color: "#E2EFDA", ink: "#375623", working: true,  teaching: true },
+      { code: "MK", label: "Made-working day",           color: "#C6E0B4", ink: "#375623", working: true,  teaching: true },
+      { code: "IP", label: "Induction programme",        color: "#E4D9F2", ink: "#4B2E83", working: false, teaching: false },
+      { code: "EX", label: "Theory / practical exam",    color: "#F8CBAD", ink: "#833C0C", working: false, teaching: false },
+    ];
+
+    const CONFIG_HINTS = {
+      CurrentAcademicYear: "Academic year currently published, e.g. 2026-27.",
+      CurrentTerm: "Odd or Even - a full year needs both.",
+      TermCommencement: "yyyy-MM-dd. Shown on the hero and the report.",
+      TermEnd: "yyyy-MM-dd.",
+      PracticalExamStart: "yyyy-MM-dd.", PracticalExamEnd: "yyyy-MM-dd.",
+      TheoryExamStart: "yyyy-MM-dd. Theory exams usually start after the term ends.",
+      ProgramScope: "Which programmes and semesters this calendar applies to.",
+      ReleaseBanner: "Flash message across the portal. Blank hides it.",
+      ReleaseBannerUntil: "yyyy-MM-dd - the banner hides itself after this date.",
+      LogoUrl: "assets/KLE_Logo.png, or a full https URL.",
+      StaffCount: "Feeds the paper-saved estimate.",
+      CircularsPerTerm: "Reprints avoided per term.",
+      PagesPerCircular: "Pages in one printed circular.",
+      City: "Weather lookup, e.g. Hubballi,IN.",
+      DraftStatus: "In preparation | Ready | Published.",
+    };
+
+    /* ============================== plumbing ============================ */
+
+    const $ = (s, r) => (r || document).querySelector(s);
+    const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+    const esc = (v) => String(v === null || v === undefined ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const pad = (n) => String(n).padStart(2, "0");
+    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const DOW = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+    const toDate = (ymd) => {
+      if (!ymd) return null;
+      const p = String(ymd).split("-");
+      if (p.length !== 3) return null;
+      const d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return isNaN(d) ? null : d;
+    };
+    const toYmd = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    const todayYmd = () => toYmd(new Date());
+    const fmtDate = (ymd) => {
+      const d = toDate(ymd);
+      return d ? d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear() : "--";
+    };
+    const fmtShort = (ymd) => {
+      const d = toDate(ymd);
+      return d ? d.getDate() + " " + MONTHS[d.getMonth()] : "--";
+    };
+    const dowOf = (ymd) => { const d = toDate(ymd); return d ? DOW[d.getDay()] : ""; };
+    const daysBetween = (a, b) => {
+      const x = toDate(a), y = toDate(b);
+      return (x && y) ? Math.round((y - x) / 86400000) : null;
+    };
+    const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+    const num = (v, d) => { const n = Number(v); return isFinite(n) ? n : (d || 0); };
+
+    const configured = !!(GAS_URL && GAS_URL.indexOf("/exec") > 0);
+
+    function api(action, payload) {
+      const req = Object.assign({ action: action }, payload || {});
+      if (state.token) req.token = state.token;
+      if (!configured) return Promise.reject(new Error("BACKEND_NOT_CONFIGURED"));
+      /* text/plain keeps this a "simple" CORS request, which Apps Script answers
+         without a preflight it cannot handle. */
+      return fetch(GAS_URL, {
+        method: "POST", redirect: "follow",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(req),
+      }).then((res) => {
+        if (!res.ok) throw new Error("The calendar service returned HTTP " + res.status + ". Re-deploy the web app and refresh.");
+        return res.json();
+      });
+    }
+
+    async function call(action, payload) {
+      const data = await api(action, payload);
+      if (!data || data.ok !== true) throw new Error((data && data.error) || "The request could not be completed.");
+      return data;
+    }
+
+    function toast(title, body, type) {
+      const el = document.createElement("div");
+      el.className = "toast " + (type || "info");
+      el.innerHTML = '<div class="toast-title">' + esc(title) + "</div>" +
+                     '<div class="toast-body">' + esc(body) + "</div>";
+      $("#toastWrap").appendChild(el);
+      setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 300); }, 5200);
+    }
+
+    function ask(opts) {
+      return new Promise((resolve) => {
+        const dlg = $("#promptDialog");
+        $("#promptTitle").textContent = opts.title || "Confirm";
+        $("#promptBody").textContent = opts.body || "";
+        $("#promptOk").textContent = opts.ok || "Continue";
+        $("#promptOk").classList.toggle("danger", !!opts.danger);
+        const wrap = $("#promptFieldWrap");
+        wrap.style.display = opts.field ? "grid" : "none";
+        $("#promptFieldLabel").textContent = opts.fieldLabel || "Type to confirm";
+        $("#promptField").value = "";
+        $("#promptField").placeholder = opts.placeholder || "";
+        dlg.returnValue = "";
+        dlg.showModal();
+        dlg.addEventListener("close", function handler() {
+          dlg.removeEventListener("close", handler);
+          resolve(dlg.returnValue === "ok" ? { ok: true, value: $("#promptField").value.trim() } : { ok: false });
+        });
+      });
+    }
+
+    /* ========================= event line parsing =======================
+       The same rules the backend uses, run client-side so the Events tab,
+       the .ics export and snapshot mode all work from one implementation.
+         "Ganesh Chaturthi: 14th Sept"          -> one day
+         "Minor - 1: 15th, 16th & 17th Oct"     -> three separate days
+         "Student Counselling-1: 22nd to 28th"  -> one span
+       ==================================================================== */
+
+    const MONTH_INDEX = {
+      jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
+      may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7,
+      sep: 8, sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10,
+      dec: 11, december: 11,
+    };
+
+    function weekDates(week) {
+      return (week.days || []).filter((d) => d && d.date).map((d) => d.date);
+    }
+
+    function resolveDate(day, monthIdx, dates) {
+      const first = toDate(dates[0]), last = toDate(dates[dates.length - 1]);
+      if (!first || !last) return null;
+      let cursor = addDays(first, -4);
+      const end = addDays(last, 28);
+      while (cursor <= end) {
+        if (cursor.getDate() === day && (monthIdx === null || cursor.getMonth() === monthIdx)) return toYmd(cursor);
+        cursor = addDays(cursor, 1);
+      }
+      return null;
+    }
+
+    function resolveSpec(spec, dates) {
+      const re = /(\d{1,2})(?:st|nd|rd|th)\b(?:\s+([A-Za-z]{3,9}))?/gi;
+      const tokens = [];
+      let m;
+      while ((m = re.exec(spec)) !== null) {
+        const word = m[2] ? m[2].toLowerCase() : null;
+        tokens.push({ day: +m[1], month: (word && word in MONTH_INDEX) ? MONTH_INDEX[word] : null });
+      }
+      for (let i = tokens.length - 2; i >= 0; i--) {
+        if (tokens[i].month === null) tokens[i].month = tokens[i + 1].month;
+      }
+      return tokens.map((t) => resolveDate(t.day, t.month, dates)).filter(Boolean);
+    }
+
+    function parseWeek(week) {
+      const text = String(week.events || "");
+      const dates = weekDates(week);
+      if (!text.trim() || !dates.length) return [];
+      const out = [];
+      text.split(/\r?\n/).forEach((line, index) => {
+        line = line.trim();
+        if (!line) return;
+        const cut = line.lastIndexOf(":");
+        const title = cut > 0 ? line.slice(0, cut).trim() : line;
+        const spec = cut > 0 ? line.slice(cut + 1).trim() : "";
+        const found = resolveSpec(spec, dates);
+        const span = /\bto\b|–|—/i.test(spec) && found.length >= 2;
+        if (!found.length) {
+          out.push({ index, title, spec, start: dates[0], end: dates[0], guessed: true, weekNo: week.weekNo });
+        } else if (span) {
+          out.push({ index, title, spec, start: found[0], end: found[found.length - 1], guessed: false, weekNo: week.weekNo });
+        } else {
+          found.forEach((d) => out.push({ index, title, spec, start: d, end: d, guessed: false, weekNo: week.weekNo }));
+        }
+      });
+      return out;
+    }
+
+    const weekEvents = (w) => { if (!w._parsed) w._parsed = parseWeek(w); return w._parsed; };
+    const allEvents = () => state.weeks.reduce((acc, w) => acc.concat(weekEvents(w)), []);
+
+    /* ============================== insights ============================ */
+
+    const typeOf = (code) => {
+      const list = state.legend.length ? state.legend : DEFAULT_LEGEND;
+      const c = String(code || "W").toUpperCase();
+      for (let i = 0; i < list.length; i++) if (list[i].code === c) return list[i];
+      return list[0];
+    };
+
+    function computeKpis() {
+      const today = todayYmd();
+      const counts = {};
+      const weekdayWorking = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => ({ day: d, count: 0 }));
+      let totalWorking = 0, completed = 0, teaching = 0, totalDays = 0;
+      let termStart = null, termEnd = null, nextExam = null, nextHoliday = null;
+
+      state.weeks.forEach((w) => {
+        (w.days || []).forEach((d, i) => {
+          if (!d || !d.date) return;
+          totalDays++;
+          if (!termStart || d.date < termStart) termStart = d.date;
+          if (!termEnd || d.date > termEnd) termEnd = d.date;
+          const t = typeOf(d.code);
+          counts[t.code] = (counts[t.code] || 0) + 1;
+          if (t.working) {
+            totalWorking++;
+            weekdayWorking[i].count++;
+            if (d.date <= today) completed++;
+          }
+          if (t.teaching) teaching++;
+          if (d.code === "ME" && d.date >= today && (!nextExam || d.date < nextExam)) nextExam = d.date;
+          if (d.code === "H" && d.date >= today && (!nextHoliday || d.date < nextHoliday)) nextHoliday = d.date;
+        });
+      });
+
+      const upcoming = allEvents().filter((e) => e.end >= today)
+        .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
+
+      const cfg = state.config || {};
+      const sheets = num(cfg.StaffCount) * num(cfg.CircularsPerTerm) * num(cfg.PagesPerCircular);
+      let nextHolidayName = null;
+      if (nextHoliday) {
+        const hit = state.holidays.filter((h) => h.date === nextHoliday)[0];
+        nextHolidayName = hit ? hit.occasion : null;
+      }
+
+      return {
+        today, termStart, termEnd, counts, weekdayWorking, weeks: state.weeks.length,
+        totalCalendarDays: totalDays, totalWorkingDays: totalWorking,
+        workingDaysCompleted: completed,
+        workingDaysRemaining: Math.max(0, totalWorking - completed),
+        percentComplete: totalWorking ? Math.round((completed / totalWorking) * 100) : 0,
+        teachingDays: teaching,
+        totalEvents: allEvents().length,
+        upcoming,
+        nextMinorExam: nextExam,
+        daysToNextMinorExam: nextExam ? daysBetween(today, nextExam) : null,
+        nextHoliday, nextHolidayName,
+        daysToNextHoliday: nextHoliday ? daysBetween(today, nextHoliday) : null,
+        termDaysRemaining: termEnd ? Math.max(0, daysBetween(today, termEnd) || 0) : null,
+        sheetsSaved: sheets,
+        treesSaved: sheets ? Math.round((sheets / 8333) * 100) / 100 : 0,
+        beforeTerm: termStart ? today < termStart : false,
+        afterTerm: termEnd ? today > termEnd : false,
+      };
+    }
+
+    /* ========================= calendar handoff =========================
+       Faculty add dates to their OWN calendar: a Google Calendar template
+       link for one entry, an .ics download for the whole term. Neither needs
+       this script to hold anyone's calendar permission.
+       ==================================================================== */
+
+    const stamp = (ymd) => String(ymd).replace(/-/g, "");
+    const endExclusive = (ymd) => { const d = toDate(ymd); return d ? stamp(toYmd(addDays(d, 1))) : stamp(ymd); };
+
+    function gcalUrl(ev) {
+      const details = "KLE Academic Calendar · " + (state.term.label || "") +
+                      " · Week " + ev.weekNo + ". Published from the Academic Calendar Portal.";
+      return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+             "&text=" + encodeURIComponent(ev.title) +
+             "&dates=" + stamp(ev.start) + "/" + endExclusive(ev.end) +
+             "&details=" + encodeURIComponent(details) +
+             "&location=" + encodeURIComponent(state.config.InstitutionName || "KLE Technological University");
+    }
+
+    function icsFor(events, name) {
+      const now = new Date();
+      const dtstamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" +
+                      pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + pad(now.getUTCSeconds()) + "Z";
+      const fold = (s) => String(s).replace(/([,;\\])/g, "\\$1").replace(/\r?\n/g, "\\n");
+      const lines = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+        "PRODID:-//KLE Technological University//Academic Calendar Portal//EN",
+        "X-WR-CALNAME:" + fold(name),
+      ];
+      events.forEach((ev, i) => {
+        lines.push(
+          "BEGIN:VEVENT",
+          "UID:kle-" + stamp(ev.start) + "-" + i + "@kletech.ac.in",
+          "DTSTAMP:" + dtstamp,
+          "DTSTART;VALUE=DATE:" + stamp(ev.start),
+          "DTEND;VALUE=DATE:" + endExclusive(ev.end),
+          "SUMMARY:" + fold(ev.title),
+          "DESCRIPTION:" + fold("KLE Academic Calendar · " + (state.term.label || "") + " · Week " + ev.weekNo),
+          "TRANSP:TRANSPARENT",
+          "END:VEVENT"
+        );
+      });
+      lines.push("END:VCALENDAR");
+      return lines.join("\r\n");
+    }
+
+    function downloadIcs(events, name) {
+      if (!events.length) { toast("Nothing to add", "No dated events were found for this selection.", "info"); return; }
+      const blob = new Blob([icsFor(events, name)], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name.replace(/[^\w\-]+/g, "_") + ".ics";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      toast("Calendar file ready", events.length + " event(s) downloaded. Open the file to import it into Google Calendar, Outlook or Apple Calendar.", "success");
+    }
+
+    /* ============================== chrome ============================== */
+
+    function applyLogo() {
+      const url = state.config.LogoUrl || "assets/KLE_Logo.png";
+      const mark = $("#brandMark");
+      const img = new Image();
+      img.onload = function () {
+        const wide = img.naturalWidth > img.naturalHeight * 1.35;
+        mark.classList.add("has-logo");
+        mark.classList.toggle("wide", wide);
+        mark.innerHTML = '<img src="' + esc(url) + '" alt="' + esc(state.config.InstitutionName || "KLE") + '" />';
+        const slot = $("#reportLogo");
+        if (slot) {
+          slot.classList.toggle("wide", wide);
+          slot.innerHTML = '<img src="' + esc(url) + '" alt="" />';
+        }
+      };
+      img.onerror = function () {
+        /* keep the KLE monogram - a missing file must not blank the header */
+        mark.classList.remove("has-logo");
+      };
+      img.src = url;
+    }
+
+    function renderChrome() {
+      const t = state.term || {};
+      $("#eyebrow").textContent = t.label || "Academic calendar";
+      $("#brandSub").textContent = (state.config.InstitutionName || "KLE Technological University") + " · Hubballi";
+      document.title = (t.label || "Academic Calendar") + " · KLE Technological University";
+
+      const pills = [];
+      if (t.commencement) pills.push("Term begins " + fmtDate(t.commencement));
+      if (t.end) pills.push("Term ends " + fmtDate(t.end));
+      if (t.practicalExams && t.practicalExams.start) {
+        pills.push("Practical exams " + fmtShort(t.practicalExams.start) + " – " + fmtDate(t.practicalExams.end));
+      }
+      if (t.theoryExams) pills.push("Theory exams from " + fmtDate(t.theoryExams));
+      if (state.config.DocumentCode) pills.push(state.config.DocumentCode);
+      $("#heroPills").innerHTML = pills.map((p) => '<span class="hero-pill">' + esc(p) + "</span>").join("");
+
+      if (t.programScope) {
+        $("#heroCopy").innerHTML = "For " + esc(t.programScope) + ".<br>" +
+          "Working days are counted by formula, holidays and exam windows are colour-coded, " +
+          "and every entry can be dropped into your own calendar.";
+      }
+
+      $("#lastModified").textContent = (state.meta && state.meta.lastModified) || "--";
+      $("#footerUpdated").textContent = (state.meta && state.meta.lastModified) || "--";
+      applyLogo();
+    }
+
+    function renderTermStatus(k) {
+      const dot = $("#liveDot");
+      let head = "In session", sub = "";
+      if (k.beforeTerm) {
+        head = "Term not started";
+        sub = "Calendar starts " + fmtDate(k.termStart) + " · in " + daysBetween(k.today, k.termStart) + " day(s)" +
+              (state.term.commencement && state.term.commencement !== k.termStart ? " · classes from " + fmtDate(state.term.commencement) : "");
+        dot.classList.add("shut");
+      } else if (k.afterTerm) {
+        head = "Term complete";
+        sub = "Ended " + fmtDate(k.termEnd);
+        dot.classList.add("shut");
+      } else {
+        dot.classList.remove("shut");
+        head = "Week " + currentWeekNo() + " of " + k.weeks;
+        sub = k.workingDaysRemaining + " working day(s) left · " + k.percentComplete + "% complete";
+      }
+      $("#termStatus").textContent = head;
+      $("#termStatusSub").textContent = sub;
+    }
+
+    function currentWeekNo() {
+      const today = todayYmd();
+      let best = "-";
+      state.weeks.forEach((w) => {
+        const ds = weekDates(w);
+        if (ds.length && today >= ds[0] && today <= ds[ds.length - 1]) best = w.weekNo;
+      });
+      return best;
+    }
+
+    function tickClock() {
+      const d = new Date();
+      let h = d.getHours();
+      const ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      $("#clockDate").textContent = pad(d.getDate()) + "-" + MONTHS[d.getMonth()] + "-" + d.getFullYear();
+      $("#clockTime").textContent = pad(h) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + " " + ampm;
+    }
+
+    function renderWeather() {
+      const w = state.weather;
+      const icon = $("#umbrella");
+      if (!w) {
+        $("#weatherTemp").textContent = "--°C";
+        $("#weatherNote").textContent = "Weather unavailable";
+        return;
+      }
+      $("#weatherTemp").textContent = w.tempC + "°C · " + (w.city || "Hubballi");
+      if (w.umbrella) {
+        icon.textContent = "☔";
+        icon.classList.add("rain");
+        $("#weatherNote").textContent = "Carry an umbrella · " + w.description;
+      } else {
+        icon.textContent = "☀";
+        icon.classList.remove("rain");
+        $("#weatherNote").textContent = "No rain expected · " + w.description;
+      }
+    }
+
+    /* ============================== legend ============================== */
+
+    function renderLegend(counts) {
+      const list = state.legend.length ? state.legend : DEFAULT_LEGEND;
+      $("#legend").innerHTML = list.map((t) => {
+        const n = (counts && counts[t.code]) || 0;
+        return '<span class="legend-item">' +
+          '<span class="legend-key" style="background:' + esc(t.color) + ';color:' + esc(t.ink) + '">' + esc(t.code) + "</span>" +
+          "<span>" + esc(t.label) + "</span>" +
+          '<span class="count">' + n + " day" + (n === 1 ? "" : "s") + "</span>" +
+          "</span>";
+      }).join("");
+    }
+
+    /* ============================= KPI tiles ============================ */
+
+    function kpiCard(t) {
+      return '<div class="kpi" style="--accent:' + esc(t.accent || "var(--gold)") + '">' +
+        '<div class="kpi-label">' + esc(t.label) + "</div>" +
+        '<div class="kpi-value">' + t.value + (t.unit ? " <small>" + esc(t.unit) + "</small>" : "") + "</div>" +
+        '<div class="kpi-sub">' + esc(t.sub || "") + "</div></div>";
+    }
+
+    function publicKpiTiles(k) {
+      return [
+        { label: "Working days completed", value: k.workingDaysCompleted, unit: "of " + k.totalWorkingDays,
+          sub: k.percentComplete + "% of the semester's working days", accent: "var(--navy)" },
+        { label: "Working days remaining", value: k.workingDaysRemaining, unit: "days",
+          sub: k.termEnd ? "Term ends " + fmtDate(k.termEnd) : "", accent: "var(--blue)" },
+        { label: "Next minor exam", value: k.nextMinorExam ? fmtShort(k.nextMinorExam) : "—",
+          sub: k.daysToNextMinorExam === null ? "No further minor exam this term"
+             : (k.daysToNextMinorExam === 0 ? "Today" : "in " + k.daysToNextMinorExam + " calendar day(s)"), accent: "#943706" },
+        { label: "Next holiday", value: k.nextHoliday ? fmtShort(k.nextHoliday) : "—",
+          sub: k.nextHolidayName || (k.daysToNextHoliday !== null ? "in " + k.daysToNextHoliday + " day(s)" : "None left this term"),
+          accent: "var(--green)" },
+        { label: "Dated events", value: k.totalEvents, unit: "entries",
+          sub: k.weeks + " weeks · " + k.totalCalendarDays + " calendar days", accent: "var(--violet)" },
+      ];
+    }
+
+    /* ============================= calendar ============================= */
+
+    function dayCell(d, todayYmdStr) {
+      if (!d || !d.date) return '<span class="day blank">—</span>';
+      const t = typeOf(d.code);
+      const isToday = d.date === todayYmdStr;
+      return '<span class="day' + (isToday ? " today" : "") + '" title="' +
+        esc(d.label + " " + fmtDate(d.date) + " · " + t.label) + '" ' +
+        'style="background:' + esc(t.color) + ";color:" + esc(t.ink) + '">' +
+        '<span class="dow">' + esc(d.label) + "</span>" + d.dayNum + "</span>";
+    }
+
+    function weekMatches(w, term, filter, today) {
+      if (filter === "upcoming") {
+        const ds = weekDates(w);
+        if (!ds.length || ds[ds.length - 1] < today) return false;
+      } else if (filter === "events") {
+        if (!weekEvents(w).length) return false;
+      } else if (filter) {
+        if (!(w.days || []).some((d) => d && d.code === filter)) return false;
+      }
+      if (!term) return true;
+      const hay = (w.weekNo + " " + w.month + " " + w.events).toLowerCase();
+      return hay.indexOf(term) !== -1;
+    }
+
+    function renderCalendar() {
+      const today = todayYmd();
+      const term = $("#calSearch").value.trim().toLowerCase();
+      const filter = $("#calFilter").value;
+      const rows = [];
+      let shown = 0;
+
+      state.weeks.forEach((w) => {
+        if (!weekMatches(w, term, filter, today)) return;
+        shown++;
+        const ds = weekDates(w);
+        const isCurrent = ds.length && today >= ds[0] && today <= ds[ds.length - 1];
+        const evs = weekEvents(w);
+        const eventsHtml = evs.length
+          ? evs.map((e) => '<span class="ev">' + esc(e.title) +
+              ' <span class="ev-date">' + esc(e.start === e.end ? fmtShort(e.start) : fmtShort(e.start) + " – " + fmtShort(e.end)) + "</span></span>").join("")
+          : '<span style="color:var(--muted)">—</span>';
+
+        const actions = evs.length
+          ? (evs.length === 1
+              ? '<a class="ghost small" href="' + esc(gcalUrl(evs[0])) + '" target="_blank" rel="noopener">Add to Google</a>'
+              : '<button class="ghost small" data-week-ics="' + esc(w.weekNo) + '">Add ' + evs.length + " events</button>")
+          : '<span style="color:var(--muted);font-size:12px">—</span>';
+
+        rows.push('<tr class="' + (isCurrent ? "current-week" : "") + '">' +
+          '<td class="weekno">' + esc(w.weekNo) + (isCurrent ? '<div style="font-size:9px;color:var(--gold);font-weight:700">NOW</div>' : "") + "</td>" +
+          "<td>" + esc(w.month) + "</td>" +
+          '<td><div class="days">' + (w.days || []).map((d) => dayCell(d, today)).join("") + "</div></td>" +
+          '<td class="wd">' + esc(countWorking(w) || "—") + "</td>" +
+          '<td class="events-cell">' + eventsHtml + "</td>" +
+          "<td>" + actions + "</td></tr>");
+      });
+
+      $("#calendarRows").innerHTML = rows.length ? rows.join("")
+        : '<tr><td colspan="6" class="empty">No week matches that filter.</td></tr>';
+      $("#calCount").textContent = shown + " of " + state.weeks.length + " weeks";
+      const k = computeKpis();
+      $("#calendarSub").textContent = (state.term.label || "Academic calendar") + " · " +
+        k.totalWorkingDays + " working days · " + k.totalEvents + " dated events · " +
+        (state.snapshot ? "built-in snapshot" : "live from the sheet");
+      renderLegend(k.counts);
+    }
+
+    function countWorking(w) {
+      return (w.days || []).filter((d) => d && d.date && typeOf(d.code).working).length;
+    }
+
+    /* ============================= dashboard ============================ */
+
+    function renderDashboard(k) {
+      $("#dashKpis").innerHTML = [
+        { label: "Semester progress", value: k.percentComplete + "%", sub: k.workingDaysCompleted + " of " + k.totalWorkingDays + " working days", accent: "var(--gold)" },
+        { label: "Working days remaining", value: k.workingDaysRemaining, unit: "days", sub: k.termDaysRemaining !== null ? k.termDaysRemaining + " calendar days to term end" : "", accent: "var(--navy)" },
+        { label: "Instruction days", value: k.teachingDays, unit: "days", sub: "Working days that are not exam days", accent: "var(--blue)" },
+        { label: "Holidays this term", value: k.counts.H || 0, unit: "days", sub: (k.counts.MK || 0) + " made-working day(s) compensate", accent: "var(--green)" },
+        { label: "Minor exam days", value: k.counts.ME || 0, unit: "days", sub: (k.counts.FB || 0) + " feedback day(s) · " + (k.counts.MD || 0) + " marks-display day(s)", accent: "#943706" },
+        { label: "Sundays", value: k.counts.S || 0, unit: "days", sub: "Non-working by default", accent: "var(--violet)" },
+      ].map(kpiCard).join("");
+
+      const maxWeekday = Math.max.apply(null, k.weekdayWorking.map((d) => d.count).concat([1]));
+      const typeList = (state.legend.length ? state.legend : DEFAULT_LEGEND)
+        .map((t) => ({ t: t, n: k.counts[t.code] || 0 }))
+        .filter((r) => r.n > 0)
+        .sort((a, b) => b.n - a.n);
+      const maxType = Math.max.apply(null, typeList.map((r) => r.n).concat([1]));
+
+      const upcomingHtml = k.upcoming.slice(0, 7).map((e) => {
+        const inDays = daysBetween(k.today, e.start);
+        const when = inDays <= 0 ? "now" : "in " + inDays + "d";
+        return '<div class="tl-item">' +
+          '<div class="tl-when">' + esc(fmtShort(e.start)) + "<br>" + esc(dowOf(e.start)) + "</div>" +
+          '<div><div class="tl-title">' + esc(e.title) + "</div>" +
+          '<div class="tl-sub">Week ' + esc(e.weekNo) + (e.start === e.end ? "" : " · to " + esc(fmtShort(e.end))) + "</div></div>" +
+          '<div class="tl-in">' + esc(when) + "</div></div>";
+      }).join("") || '<div class="empty">Nothing further is scheduled this term.</div>';
+
+      $("#dashCharts").innerHTML =
+        '<div class="chart-block"><h3>Semester completion</h3><div class="chart-body">' +
+          '<div class="progress-big"><div style="width:' + k.percentComplete + '%"></div></div>' +
+          '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">' +
+            "<span>" + esc(fmtDate(k.termStart)) + "</span><span>" + esc(fmtDate(k.termEnd)) + "</span></div>" +
+          '<div class="metric-row"><b>Completed</b><div class="metric-track"><div class="metric-fill" style="width:' + k.percentComplete + '%"></div></div><span>' + k.workingDaysCompleted + "</span></div>" +
+          '<div class="metric-row"><b>Remaining</b><div class="metric-track"><div class="metric-fill" style="width:' + (100 - k.percentComplete) + '%;background:var(--navy)"></div></div><span>' + k.workingDaysRemaining + "</span></div>" +
+          '<div class="metric-row"><b>Calendar days left</b><div class="metric-track"><div class="metric-fill" style="width:' +
+            (k.termDaysRemaining !== null && k.totalCalendarDays ? Math.min(100, Math.round((k.termDaysRemaining / k.totalCalendarDays) * 100)) : 0) +
+            '%;background:var(--blue)"></div></div><span>' + (k.termDaysRemaining === null ? "—" : k.termDaysRemaining) + "</span></div>" +
+        "</div></div>" +
+
+        '<div class="chart-block"><h3>Working days by weekday</h3><div class="chart-body">' +
+          '<div class="columns">' + k.weekdayWorking.map((d) =>
+            '<div class="column"><div class="num">' + d.count + "</div>" +
+            '<div class="bar" style="height:' + Math.round((d.count / maxWeekday) * 100) + '%"></div>' +
+            '<div class="cap">' + esc(d.day) + "</div></div>").join("") + "</div>" +
+          '<div style="color:var(--muted);font-size:11.5px">Saturdays count as working days; Sundays only when made working.</div>' +
+        "</div></div>" +
+
+        '<div class="chart-block"><h3>Days by type</h3><div class="chart-body">' +
+          typeList.map((r) =>
+            '<div class="metric-row"><b><span class="legend-key" style="background:' + esc(r.t.color) + ";color:" + esc(r.t.ink) +
+              ';min-width:26px;height:19px;font-size:10px">' + esc(r.t.code) + "</span> " + esc(r.t.label) + "</b>" +
+            '<div class="metric-track"><div class="metric-fill" style="width:' + Math.round((r.n / maxType) * 100) + "%;background:" + esc(r.t.code === "W" ? "var(--navy)" : r.t.ink) + '"></div></div>' +
+            "<span>" + r.n + "</span></div>").join("") +
+        "</div></div>" +
+
+        '<div class="chart-block"><h3>What is coming up</h3><div class="chart-body">' +
+          '<div class="timeline-list">' + upcomingHtml + "</div>" +
+        "</div></div>";
+
+      $("#greenNote").innerHTML = "<div><b>Paperless impact.</b> With " +
+        esc(num(state.config.StaffCount)) + " staff, " + esc(num(state.config.CircularsPerTerm)) +
+        " circular reprints a term and " + esc(num(state.config.PagesPerCircular)) + " pages each, this portal avoids about <b>" +
+        esc(k.sheetsSaved.toLocaleString()) + " A4 sheets</b> per semester — about <b>" +
+        esc(Math.round(k.treesSaved * 2 * 100) / 100) + " trees</b> a year once both terms are counted. " +
+        "Print the formal copy only when a signature is genuinely needed.</div>";
+
+      $("#dashSub").textContent = (state.term.label || "") + " · " + k.weeks + " weeks · derived from the day-type codes, nothing typed twice.";
+    }
+
+    /* ============================== events ============================== */
+
+    function renderEvents() {
+      const today = todayYmd();
+      const term = $("#evSearch").value.trim().toLowerCase();
+      const mode = $("#evFilter").value;
+      const list = allEvents()
+        .filter((e) => (mode === "all") || (mode === "past" ? e.end < today : e.end >= today))
+        .filter((e) => !term || e.title.toLowerCase().indexOf(term) !== -1)
+        .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
+
+      $("#eventRows").innerHTML = list.length ? list.map((e, i) => {
+        const range = e.start === e.end ? fmtDate(e.start) : fmtShort(e.start) + " – " + fmtDate(e.end);
+        const when = daysBetween(today, e.start);
+        const rel = e.end < today ? "done" : (when <= 0 ? "in progress" : "in " + when + " day(s)");
+        return "<tr>" +
+          '<td><b>' + esc(range) + "</b><div class=\"tl-sub\">" + esc(dowOf(e.start)) + " · " + esc(rel) + "</div></td>" +
+          '<td class="weekno">' + esc(e.weekNo) + "</td>" +
+          "<td>" + esc(e.title) + (e.guessed ? ' <span class="status draft">date unclear</span>' : "") + "</td>" +
+          '<td><div class="row-actions">' +
+            '<a class="ghost small" href="' + esc(gcalUrl(e)) + '" target="_blank" rel="noopener">Google</a>' +
+            '<button class="ghost small" data-ev-ics="' + i + '">.ics</button>' +
+          "</div></td></tr>";
+      }).join("") : '<tr><td colspan="4" class="empty">No events match.</td></tr>';
+
+      $("#evCount").textContent = list.length + " event(s)";
+      $("#eventRows").dataset.list = "";
+      state._eventView = list;
+    }
+
+    /* ============================= holidays ============================= */
+
+    function renderHolidays() {
+      const k = computeKpis();
+      const mode = $("#holFilter").value;
+      const today = todayYmd();
+      const inTerm = (h) => k.termStart && k.termEnd && h.date >= k.termStart && h.date <= k.termEnd;
+      const list = state.holidays.filter((h) =>
+        mode === "all" ? true : (mode === "upcoming" ? h.date >= today : inTerm(h)));
+
+      const codedDays = {};
+      state.weeks.forEach((w) => (w.days || []).forEach((d) => { if (d && d.date) codedDays[d.date] = d.code; }));
+
+      $("#holidayRows").innerHTML = list.length ? list.map((h) => {
+        const code = codedDays[h.date];
+        const badge = code === "H"
+          ? '<span class="status">Coded H</span>'
+          : (code ? '<span class="status draft">Coded ' + esc(code) + "</span>"
+                  : '<span class="status archive">Outside term</span>');
+        return "<tr><td><b>" + esc(fmtDate(h.date)) + "</b></td><td>" + esc(dowOf(h.date)) + "</td>" +
+          "<td>" + esc(h.occasion) + (h.remarks ? '<div class="tl-sub">' + esc(h.remarks) + "</div>" : "") + "</td>" +
+          "<td>" + esc(h.appliesTo || "All") + "</td><td>" + badge + "</td></tr>";
+      }).join("") : '<tr><td colspan="5" class="empty">No holidays in this view.</td></tr>';
+      $("#holCount").textContent = list.length + " of " + state.holidays.length + " listed";
+    }
+
+    /* ============================== report ============================== */
+
+    function renderReport() {
+      const k = computeKpis();
+      const cfg = state.config, t = state.term;
+      const legend = state.legend.length ? state.legend : DEFAULT_LEGEND;
+
+      const weekRows = state.weeks.map((w) => {
+        const evs = weekEvents(w);
+        return "<tr><td style='text-align:center'>" + esc(w.weekNo) + "</td><td>" + esc(w.month) + "</td>" +
+          (w.days || []).map((d) => {
+            if (!d || !d.date) return "<td></td>";
+            const ty = typeOf(d.code);
+            return "<td style='text-align:center;background:" + esc(ty.color) + ";color:" + esc(ty.ink) + "'>" + d.dayNum + "</td>";
+          }).join("") +
+          "<td style='text-align:center'>" + esc(countWorking(w) || "-") + "</td>" +
+          "<td>" + (evs.length ? evs.map((e) => esc(e.title) + " : " + esc(e.start === e.end ? fmtShort(e.start) : fmtShort(e.start) + " to " + fmtShort(e.end))).join("<br>") : "") + "</td></tr>";
+      }).join("");
+
+      $("#pdfReport").innerHTML =
+        '<div class="letterhead">' +
+          '<div class="letterhead-logo" id="reportLogo"><span class="fallback">KLE</span></div>' +
+          "<div><div class=\"letterhead-inst\">" + esc(cfg.InstitutionName || "KLE Technological University") + "</div>" +
+          '<div class="letterhead-unit">' + esc(cfg.InstitutionUnit || "Hubballi") + "</div>" +
+          '<div class="letterhead-title">Calendar of <em>Events</em> · ' + esc(t.label || "") + "</div></div>" +
+        "</div>" +
+
+        '<div class="report-section"><table class="doc-control"><tbody>' +
+          "<tr><th>Document</th><td>" + esc(cfg.DocumentCode || "—") + "</td><th>Applies to</th><td>" + esc(t.programScope || "—") + "</td></tr>" +
+          "<tr><th>Term</th><td>" + esc(fmtDate(t.commencement)) + " to " + esc(fmtDate(t.end)) + "</td>" +
+          "<th>Exams</th><td>Practical " + esc(fmtShort(t.practicalExams && t.practicalExams.start)) + " – " + esc(fmtDate(t.practicalExams && t.practicalExams.end)) +
+          " · Theory from " + esc(fmtDate(t.theoryExams)) + "</td></tr>" +
+          "<tr><th>Generated</th><td>" + esc(fmtDate(k.today)) + "</td><th>Sheet updated</th><td>" + esc((state.meta && state.meta.lastModified) || "—") + "</td></tr>" +
+        "</tbody></table></div>" +
+
+        '<div class="report-section"><div class="exec-summary">This calendar carries <b>' + k.totalWorkingDays +
+          " working days</b> across <b>" + k.weeks + " weeks</b>, with " + (k.counts.H || 0) + " holidays, " +
+          (k.counts.ME || 0) + " minor-exam days and " + (k.counts.FB || 0) + " feedback days. " +
+          "As on " + esc(fmtDate(k.today)) + ", <b>" + k.workingDaysCompleted + "</b> working days are complete (" +
+          k.percentComplete + "%) and <b>" + k.workingDaysRemaining + "</b> remain. " +
+          "Counts are derived from the day-type codes in the workbook, not entered by hand.</div></div>" +
+
+        '<div class="report-kpis">' +
+          '<div class="report-kpi"><div class="report-kpi-label">Working days</div><div class="report-kpi-value">' + k.totalWorkingDays + "</div></div>" +
+          '<div class="report-kpi"><div class="report-kpi-label">Completed</div><div class="report-kpi-value">' + k.workingDaysCompleted + "</div></div>" +
+          '<div class="report-kpi"><div class="report-kpi-label">Remaining</div><div class="report-kpi-value">' + k.workingDaysRemaining + "</div></div>" +
+          '<div class="report-kpi"><div class="report-kpi-label">Dated events</div><div class="report-kpi-value">' + k.totalEvents + "</div></div>" +
+        "</div>" +
+
+        '<div class="report-section"><div class="report-section-title"><span class="num">01</span> Week-wise calendar</div>' +
+          '<table class="report-table"><thead><tr><th>Week</th><th>Month</th>' +
+          ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => "<th>" + d + "</th>").join("") +
+          "<th>Working days</th><th>Events</th></tr></thead><tbody>" + weekRows + "</tbody></table>" +
+          '<div class="report-note">Total working days: <b>' + k.totalWorkingDays + "</b>.</div></div>" +
+
+        '<div class="report-section"><div class="report-section-title"><span class="num">02</span> Legend</div>' +
+          '<table class="report-table"><thead><tr><th style="width:70px">Code</th><th>Day type</th><th style="width:150px">Counts as working</th><th style="width:90px">Days</th></tr></thead><tbody>' +
+          legend.map((ty) => "<tr><td style='text-align:center;background:" + esc(ty.color) + ";color:" + esc(ty.ink) + ";font-weight:700'>" + esc(ty.code) + "</td>" +
+            "<td>" + esc(ty.label) + "</td><td>" + (ty.working ? "Yes" : "No") + "</td><td style='text-align:center'>" + (k.counts[ty.code] || 0) + "</td></tr>").join("") +
+          "</tbody></table></div>" +
+
+        '<div class="signature-block">' +
+          '<div class="sign-slot"><b>Prepared by</b>Centre for Engineering Education Research</div>' +
+          '<div class="sign-slot"><b>Verified by</b>Office of the Registrar</div>' +
+          '<div class="sign-slot"><b>Approved by</b>Dean Academics</div>' +
+        "</div>" +
+        '<div class="report-end">End of document</div>';
+
+      applyLogo();
+    }
+
+    /* ============================== console ============================= */
+
+    function consoleRequested() {
+      const hash = String(location.hash || "").replace("#", "").toLowerCase();
+      const query = new URLSearchParams(location.search || "");
+      return hash === "console" || hash === "admin" || query.has("admin") || query.get("view") === "console";
+    }
+
+    function showLogin(show) {
+      $("#loginScreen").classList.toggle("show", show);
+      if (show) {
+        $("#loginPassword").value = "";
+        $("#loginError").textContent = "";
+        setTimeout(() => $("#loginPassword").focus(), 60);
+      }
+    }
+
+    async function adminLogin() {
+      const pw = $("#loginPassword").value;
+      if (!pw) { $("#loginError").textContent = "Enter the password."; return; }
+      const btn = $("#loginSubmit");
+      btn.disabled = true; btn.textContent = "Checking…";
+      try {
+        const data = await call("adminLogin", { password: pw });
+        state.token = data.token;
+        state.adminOn = true;
+        document.body.classList.add("admin");
+        showLogin(false);
+        await refresh();
+        openPanel("admin");
+        toast("Signed in", data.message, "success");
+      } catch (err) {
+        $("#loginError").textContent = err.message;
+      } finally {
+        btn.disabled = false; btn.textContent = "Sign in";
+      }
+    }
+
+    async function adminLogout() {
+      const token = state.token;
+      state.token = ""; state.adminOn = false;
+      document.body.classList.remove("admin");
+      openPanel("calendar");
+      toast("Signed out", "Editing was disabled on this device.", "info");
+      if (token) { try { await api("adminLogout", { token: token }); } catch (e) { /* best effort */ } }
+    }
+
+    function adminWeeks() {
+      return state.scope === "draft" ? (state.draftWeeks || []) : state.weeks;
+    }
+
+    function renderAdmin() {
+      if (!state.adminOn) return;
+      const k = computeKpis();
+      $("#adminKpis").innerHTML = [
+        { label: "Live term", value: esc(state.term.term || "—"), unit: esc(state.term.year || ""), sub: k.weeks + " weeks · " + k.totalWorkingDays + " working days", accent: "var(--navy)" },
+        { label: "Draft term", value: esc(state.draft.term || "—"), unit: esc(state.draft.year || ""), sub: (state.draft.weeks || 0) + " weeks built · " + esc(state.draft.status || ""), accent: "var(--amber)" },
+        { label: "Dated events", value: k.totalEvents, sub: "across the live term", accent: "var(--blue)" },
+        { label: "Archived terms", value: (state.archives || []).length, sub: (state.archives || []).slice(0, 2).join(", ") || "None yet", accent: "var(--muted)" },
+      ].map(kpiCard).join("");
+
+      const weeks = adminWeeks();
+      const today = todayYmd();
+      $("#adminRows").innerHTML = weeks.length ? weeks.map((w) => {
+        const evs = weekEvents(w);
+        const evHtml = evs.length ? evs.map((e) =>
+          '<div style="display:flex;gap:6px;align-items:center;padding:2px 0">' +
+            '<span style="flex:1">' + esc(e.title) + ' <span class="ev-date">' + esc(fmtShort(e.start)) + "</span></span>" +
+            '<button class="ghost small" data-edit-event="' + esc(w.weekNo) + "|" + e.index + '">Edit</button>' +
+            '<button class="ghost small danger" data-del-event="' + esc(w.weekNo) + "|" + e.index + '">×</button>' +
+          "</div>").join("") : '<span style="color:var(--muted)">—</span>';
+        return "<tr>" +
+          '<td class="weekno">' + esc(w.weekNo) + "</td>" +
+          '<td><div class="days">' + (w.days || []).map((d) => dayCell(d, today)).join("") + "</div></td>" +
+          '<td class="wd">' + countWorking(w) + "</td>" +
+          "<td>" + evHtml + '<button class="ghost small" data-add-event="' + esc(w.weekNo) + '" style="margin-top:6px">+ event</button></td>' +
+          '<td><div class="row-actions">' +
+            '<button class="ghost small" data-edit-week="' + esc(w.weekNo) + '">Edit week</button>' +
+            '<button class="ghost small danger" data-del-week="' + esc(w.weekNo) + '">Delete</button>' +
+          "</div></td></tr>";
+      }).join("") : '<tr><td colspan="5" class="empty">This grid is empty. Build the draft below, or add a week.</td></tr>';
+
+      $("#scopeHint").textContent = state.scope === "draft"
+        ? "Editing the DRAFT - viewers still see the live term until you publish."
+        : "Editing the LIVE term - changes are visible to everyone immediately.";
+
+      $("#holChips").innerHTML = state.holidays.map((h) =>
+        '<span class="chip">' + esc(fmtShort(h.date)) + " · " + esc(h.occasion) +
+        '<button data-del-holiday="' + esc(h.date) + '" title="Remove">×</button></span>').join("") ||
+        '<span style="color:var(--muted);font-size:12.5px">No holidays listed yet.</span>';
+
+      const keys = Object.keys(state.config).sort();
+      $("#setKey").innerHTML = keys.map((k2) => '<option value="' + esc(k2) + '">' + esc(k2) + "</option>").join("");
+      syncSettingValue();
+
+      $("#draftChips").innerHTML =
+        '<span class="chip">Draft: ' + esc(state.draft.term || "—") + " " + esc(state.draft.year || "") + "</span>" +
+        '<span class="chip">' + esc(state.draft.status || "") + "</span>" +
+        '<span class="chip">' + (state.draft.weeks || 0) + " weeks</span>";
+      $("#publishState").innerHTML =
+        '<span class="chip good">Live: ' + esc(state.term.term || "") + " " + esc(state.term.year || "") + "</span>" +
+        '<span class="chip">Next: ' + esc(state.draft.term || "") + " " + esc(state.draft.year || "") + "</span>";
+
+      if (!$("#draftYear").value) $("#draftYear").value = state.draft.year || "";
+      if (state.draft.term) $("#draftTerm").value = state.draft.term;
+
+      $("#auditList").innerHTML = (state.audit || []).map((a) =>
+        '<div class="audit-row"><div class="when">' + esc(a.at) + " · " + esc(a.actor) + "</div>" +
+        "<div><b>" + esc(a.action) + "</b> " + esc(a.target) + (a.details ? " — " + esc(a.details) : "") + "</div></div>").join("") ||
+        '<div style="color:var(--muted);font-size:12.5px">No activity recorded yet.</div>';
+    }
+
+    function syncSettingValue() {
+      const key = $("#setKey").value;
+      $("#setValue").value = state.config[key] === undefined ? "" : state.config[key];
+      $("#setHint").textContent = CONFIG_HINTS[key] || "";
+    }
+
+    /* ---------- week / event editors ---------- */
+
+    let weekEditContext = null;
+
+    function openWeekDialog(weekNo) {
+      const weeks = adminWeeks();
+      const week = weeks.filter((w) => String(w.weekNo) === String(weekNo))[0] || null;
+      weekEditContext = { weekNo: week ? week.weekNo : nextWeekNo(weeks), existing: !!week };
+
+      $("#weekDialogTitle").textContent = week ? "Edit week " + week.weekNo : "Add a week";
+      $("#weekNoInput").value = weekEditContext.weekNo;
+      const ds = week ? weekDates(week) : [];
+      $("#weekMondayInput").value = ds.length ? mondayOf(ds[0]) : suggestNextMonday(weeks);
+      $("#weekEventsInput").value = week ? week.events || "" : "";
+
+      const legend = state.legend.length ? state.legend : DEFAULT_LEGEND;
+      $("#codeGrid").innerHTML = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((label, i) => {
+        const d = week && week.days ? week.days[i] : null;
+        const current = d && d.date ? (d.code || "W") : "";
+        return "<label>" + label +
+          '<select class="field" data-code="' + i + '">' +
+            '<option value=""' + (current ? "" : " selected") + ">—</option>" +
+            legend.map((t) => '<option value="' + esc(t.code) + '"' + (current === t.code ? " selected" : "") + ">" + esc(t.code) + "</option>").join("") +
+          "</select></label>";
+      }).join("");
+
+      $("#weekDialog").showModal();
+    }
+
+    function nextWeekNo(weeks) {
+      let max = 0;
+      weeks.forEach((w) => { const n = Number(w.weekNo); if (isFinite(n) && n > max) max = n; });
+      return max + 1;
+    }
+
+    function mondayOf(ymd) {
+      const d = toDate(ymd);
+      if (!d) return "";
+      return toYmd(addDays(d, -((d.getDay() + 6) % 7)));
+    }
+
+    function suggestNextMonday(weeks) {
+      if (!weeks.length) return "";
+      const ds = weekDates(weeks[weeks.length - 1]);
+      if (!ds.length) return "";
+      return toYmd(addDays(toDate(mondayOf(ds[0])), 7));
+    }
+
+    async function saveWeekFromDialog() {
+      const codes = $$("#codeGrid select").map((s) => s.value);
+      const payload = {
+        scope: state.scope,
+        weekNo: $("#weekNoInput").value.trim(),
+        monday: $("#weekMondayInput").value,
+        codes: codes.map((c) => c || "W"),
+        include: codes.map((c) => c !== ""),
+        events: $("#weekEventsInput").value,
+      };
+      if (!payload.weekNo) { toast("Week not saved", "Give the week a number.", "error"); return; }
+      if (!payload.monday) { toast("Week not saved", "Pick the Monday of the week.", "error"); return; }
+      await write("saveWeek", payload);
+    }
+
+    let eventEditContext = null;
+
+    function openEventDialog(weekNo, index) {
+      const week = adminWeeks().filter((w) => String(w.weekNo) === String(weekNo))[0];
+      if (!week) return;
+      const existing = index === null ? null : weekEvents(week).filter((e) => e.index === Number(index))[0];
+      eventEditContext = { weekNo: weekNo, index: existing ? existing.index : null };
+      $("#eventDialogTitle").textContent = existing ? "Edit event · week " + weekNo : "Add event · week " + weekNo;
+      $("#eventTitle").value = existing ? existing.title : "";
+      $("#eventStart").value = existing ? existing.start : (weekDates(week)[0] || "");
+      $("#eventEnd").value = existing && existing.end !== existing.start ? existing.end : "";
+      $("#eventDialog").showModal();
+    }
+
+    async function saveEventFromDialog() {
+      const title = $("#eventTitle").value.trim();
+      const start = $("#eventStart").value;
+      if (!title) { toast("Event not saved", "Give the event a title.", "error"); return; }
+      if (!start) { toast("Event not saved", "Pick the date it falls on.", "error"); return; }
+      await write("saveEvent", {
+        scope: state.scope, weekNo: eventEditContext.weekNo, index: eventEditContext.index,
+        title: title, start: start, end: $("#eventEnd").value || start,
+      });
+    }
+
+    /** Every write returns fresh state, so the console can never drift. */
+    async function write(action, payload) {
+      try {
+        const data = await call(action, payload);
+        applyState(data);
+        renderAll();
+        toast("Saved", data.message || "Done.", "success");
+      } catch (err) {
+        toast("Not saved", err.message, "error");
+      }
+    }
+
+    /* ============================ data loading ========================== */
+
+    function applyState(data) {
+      if (data.config) state.config = data.config;
+      if (data.term) state.term = data.term;
+      if (data.legend) state.legend = data.legend;
+      if (data.weeks) { state.weeks = data.weeks; state.weeks.forEach((w) => { w._parsed = null; }); }
+      if (data.draftWeeks) { state.draftWeeks = data.draftWeeks; state.draftWeeks.forEach((w) => { w._parsed = null; }); }
+      if (data.holidays) state.holidays = data.holidays;
+      if (data.meta) state.meta = data.meta;
+      if (data.draft) state.draft = data.draft;
+      if (data.archives) state.archives = data.archives;
+      if (data.audit) state.audit = data.audit;
+      if (data.banner !== undefined) state.banner = data.banner;
+    }
+
+    function useSnapshot(reason) {
+      state.snapshot = true;
+      state.legend = DEFAULT_LEGEND;
+      state.weeks = (SNAPSHOT.weeks || []).map((w) => Object.assign({}, w, { _parsed: null }));
+      state.holidays = SNAPSHOT.holidays || [];
+      state.config = {
+        InstitutionName: "KLE Technological University",
+        InstitutionUnit: "Hubballi · Centre for Engineering Education Research (CEER)",
+        DocumentCode: "ANAM 0201/1.0", LogoUrl: "assets/KLE_Logo.png",
+        StaffCount: "420", CircularsPerTerm: "6", PagesPerCircular: "2",
+      };
+      state.term = {
+        year: "2026-27", term: "Odd", label: "Odd Semester 2026-27",
+        commencement: "2026-09-07", end: "2026-12-29",
+        practicalExams: { start: "2027-01-01", end: "2027-01-05" }, theoryExams: "2027-01-08",
+        programScope: "B.E (1st, 3rd & 5th), B.Arch (1st, 3rd, 5th, 7th & 9th), BBA, BCA, MCA (Integrated), B.Com (5th) & B.Sc FAD (3rd & 5th)",
+      };
+      state.meta = { lastModified: "—" };
+      const notice = $("#snapshotNotice");
+      notice.className = "notice warn";
+      notice.innerHTML = "<b>Showing the built-in snapshot.</b> The portal could not reach the Google Sheet, so this is the " +
+        "Odd Semester 2026-27 calendar as published, not a live read — figures may be out of date and editing is unavailable. " +
+        "<span style='display:block;margin-top:4px;font-size:12.5px'>" + esc(reason) + "</span>";
+    }
+
+    async function refresh(quiet) {
+      try {
+        const data = await call("bootstrap", {});
+        state.snapshot = false;
+        $("#snapshotNotice").className = "notice hidden";
+        applyState(data);
+        if (data.isAdmin === false && state.adminOn) {
+          state.adminOn = false; state.token = ""; document.body.classList.remove("admin");
+        }
+        renderAll();
+        if (!quiet) toast("Up to date", "Loaded from the sheet.", "success");
+      } catch (err) {
+        const reason = err.message === "BACKEND_NOT_CONFIGURED"
+          ? "GAS_URL has not been set in index.html."
+          : err.message;
+        useSnapshot(reason);
+        renderAll();
+      }
+    }
+
+    function renderAll() {
+      const k = computeKpis();
+      renderChrome();
+      renderTermStatus(k);
+      $("#publicKpis").innerHTML = publicKpiTiles(k).map(kpiCard).join("");
+      renderCalendar();
+      renderDashboard(k);
+      renderEvents();
+      renderHolidays();
+      renderReport();
+      renderAdmin();
+
+      const banner = $("#releaseBanner");
+      if (state.banner && state.banner.text) {
+        banner.className = "notice good";
+        banner.innerHTML = "<b>New release.</b> " + esc(state.banner.text);
+      } else {
+        banner.className = "notice hidden";
+      }
+    }
+
+    /* =============================== panels ============================= */
+
+    function openPanel(name) {
+      $$(".panel").forEach((p) => p.classList.toggle("active", p.id === name));
+      $$("#nav button").forEach((b) => b.classList.toggle("active", b.dataset.panel === name));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function on(sel, evt, fn) { const el = $(sel); if (el) el.addEventListener(evt, fn); }
+
+    /* =============================== wiring ============================= */
+
+    function wire() {
+      $$("#nav button").forEach((b) => b.addEventListener("click", () => openPanel(b.dataset.panel)));
+
+      document.addEventListener("click", async (e) => {
+        const t = e.target.closest("button, a");
+        if (!t) return;
+
+        if (t.dataset.action === "refresh") { refresh(); return; }
+        if (t.dataset.action === "report") { openPanel("report"); return; }
+        if (t.dataset.action === "print") { renderReport(); setTimeout(() => window.print(), 120); return; }
+
+        if (t.dataset.weekIcs !== undefined && t.dataset.weekIcs !== "") {
+          const w = state.weeks.filter((x) => String(x.weekNo) === t.dataset.weekIcs)[0];
+          if (w) downloadIcs(weekEvents(w), "KLE_Week_" + w.weekNo);
+          return;
+        }
+        if (t.dataset.evIcs !== undefined && t.dataset.evIcs !== "") {
+          const ev = (state._eventView || [])[Number(t.dataset.evIcs)];
+          if (ev) downloadIcs([ev], "KLE_" + ev.title.slice(0, 40));
+          return;
+        }
+
+        if (t.dataset.editWeek) { openWeekDialog(t.dataset.editWeek); return; }
+        if (t.dataset.addEvent) { openEventDialog(t.dataset.addEvent, null); return; }
+        if (t.dataset.editEvent) {
+          const parts = t.dataset.editEvent.split("|");
+          openEventDialog(parts[0], parts[1]);
+          return;
+        }
+        if (t.dataset.delEvent) {
+          const parts = t.dataset.delEvent.split("|");
+          const res = await ask({ title: "Remove event", body: "Delete this event line from week " + parts[0] + "?", ok: "Delete", danger: true });
+          if (res.ok) await write("deleteEvent", { scope: state.scope, weekNo: parts[0], index: Number(parts[1]) });
+          return;
+        }
+        if (t.dataset.delWeek) {
+          const res = await ask({ title: "Delete week", body: "Week " + t.dataset.delWeek + " and its events will be removed from the " + state.scope + " grid.", ok: "Delete", danger: true });
+          if (res.ok) await write("deleteWeek", { scope: state.scope, weekNo: t.dataset.delWeek });
+          return;
+        }
+        if (t.dataset.delHoliday) {
+          const res = await ask({ title: "Remove holiday", body: "Remove " + fmtDate(t.dataset.delHoliday) + " from the holiday list?", ok: "Remove", danger: true });
+          if (res.ok) await write("deleteHoliday", { date: t.dataset.delHoliday });
+          return;
+        }
+      });
+
+      on("#calSearch", "input", renderCalendar);
+      on("#calFilter", "change", renderCalendar);
+      on("#evSearch", "input", renderEvents);
+      on("#evFilter", "change", renderEvents);
+      on("#holFilter", "change", renderHolidays);
+
+      on("#icsAll", "click", () => downloadIcs(allEvents(), "KLE_" + (state.term.label || "Calendar")));
+      on("#icsAll2", "click", () => downloadIcs(allEvents(), "KLE_" + (state.term.label || "Calendar")));
+
+      on("#adminBtn", "click", () => showLogin(true));
+      on("#loginCancel", "click", () => showLogin(false));
+      on("#loginSubmit", "click", adminLogin);
+      on("#loginPassword", "keydown", (e) => { if (e.key === "Enter") adminLogin(); });
+      on("#logoutBtn", "click", adminLogout);
+
+      $$("#scopeSwitch button").forEach((b) => b.addEventListener("click", () => {
+        state.scope = b.dataset.scope;
+        $$("#scopeSwitch button").forEach((x) => x.classList.toggle("active", x === b));
+        renderAdmin();
+      }));
+
+      on("#addWeekBtn", "click", () => openWeekDialog(null));
+      on("#weekForm", "submit", (e) => { if (e.submitter && e.submitter.value === "ok") saveWeekFromDialog(); });
+      on("#eventForm", "submit", (e) => { if (e.submitter && e.submitter.value === "ok") saveEventFromDialog(); });
+
+      on("#setKey", "change", syncSettingValue);
+      on("#setSave", "click", () => write("setConfig", { key: $("#setKey").value, value: $("#setValue").value }));
+
+      on("#holAdd", "click", () => {
+        const date = $("#holDate").value, name = $("#holName").value.trim();
+        if (!date || !name) { toast("Not saved", "A date and an occasion are both needed.", "error"); return; }
+        write("saveHoliday", { date: date, occasion: name }).then(() => { $("#holName").value = ""; });
+      });
+
+      on("#genDraftBtn", "click", async () => {
+        const payload = {
+          year: $("#draftYear").value.trim(), term: $("#draftTerm").value,
+          start: $("#draftStart").value, end: $("#draftEnd").value,
+        };
+        if (!payload.start || !payload.end) { toast("Not built", "Give the term's start and end dates.", "error"); return; }
+        const res = await ask({
+          title: "Build the draft grid",
+          body: "This replaces whatever is currently in the draft grid for " + payload.term + " Semester " + payload.year +
+                ". The live term is untouched.",
+          ok: "Build draft",
+        });
+        if (res.ok) { state.scope = "draft"; $$("#scopeSwitch button").forEach((x) => x.classList.toggle("active", x.dataset.scope === "draft")); await write("generateDraft", payload); }
+      });
+
+      on("#publishBtn", "click", async () => {
+        const res = await ask({
+          title: "Publish the draft",
+          body: "The live " + (state.term.term || "") + " " + (state.term.year || "") + " calendar will be archived, and " +
+                (state.draft.term || "") + " " + (state.draft.year || "") + " takes its place for every viewer. " +
+                "Type PUBLISH to confirm.",
+          field: true, fieldLabel: "Confirmation", placeholder: "PUBLISH", ok: "Publish", danger: true,
+        });
+        if (res.ok) await write("publishDraft", { confirm: res.value });
+      });
+
+      on("#syncCalBtn", "click", async () => {
+        const res = await ask({
+          title: "Sync the shared calendar",
+          body: "Every event in the live term is rewritten into the institutional Google Calendar. " +
+                "Entries this portal created before are replaced, so nothing is duplicated.",
+          ok: "Sync now",
+        });
+        if (res.ok) await write("syncCalendar", {});
+      });
+
+      window.addEventListener("hashchange", () => { if (consoleRequested()) document.body.classList.add("console-url"); });
+    }
+
+    /* ================================ boot ============================== */
+
+    async function boot() {
+      wire();
+      tickClock();
+      setInterval(tickClock, 1000);
+      state.legend = DEFAULT_LEGEND;
+      if (consoleRequested()) document.body.classList.add("console-url");
+
+      if (!configured) {
+        $("#setupNotice").className = "notice warn";
+        $("#setupNotice").innerHTML = "<b>Not connected yet.</b> Paste the Apps Script web-app <span class='mono'>/exec</span> URL into " +
+          "<span class='mono'>GAS_URL</span> at the top of index.html, then reload.";
+      }
+
+      await refresh(true);
+
+      /* weather is a separate hop so a slow API never delays the calendar */
+      if (configured) {
+        try {
+          const w = await call("weather", {});
+          state.weather = w.weather;
+        } catch (err) { state.weather = null; }
+      }
+      renderWeather();
+
+      $("#loading").classList.add("hidden");
+    }
+
+    document.addEventListener("DOMContentLoaded", boot);
+  })();
+  </script>
 </body>
 </html>
