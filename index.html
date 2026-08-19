@@ -114,7 +114,34 @@
     .mark.has-logo {
       background: #ffffff; border-color: rgba(255,255,255,0.42); padding: 5px;
       box-shadow: 0 3px 12px rgba(0,0,0,0.22);
+      position: relative; isolation: isolate;
     }
+    /* Studio light: a soft key light travels across the plate on the diagonal,
+       coming into focus and falling away again rather than glinting past. The
+       band blends in overlay so white paper stays white and only the logo's
+       own colour lifts - a specular sheen, not a white wipe. */
+    .mark.has-logo::after {
+      content: ""; position: absolute; inset: -45%; pointer-events: none;
+      background: linear-gradient(118deg,
+        rgba(255,255,255,0) 34%,
+        rgba(255,255,255,0.28) 44%,
+        rgba(255,255,255,0.92) 50%,
+        rgba(255,255,255,0.28) 56%,
+        rgba(255,255,255,0) 66%);
+      mix-blend-mode: overlay;
+      filter: blur(0.4px);
+      transform: translate3d(-115%, -115%, 0);
+      animation: studioSweep 7.5s cubic-bezier(0.4, 0, 0.25, 1) infinite;
+    }
+    @keyframes studioSweep {
+      0%   { transform: translate3d(-115%, -115%, 0); opacity: 0; }
+      18%  { opacity: 0; }
+      38%  { opacity: 1; }
+      62%  { opacity: 1; }
+      82%  { opacity: 0; }
+      100% { transform: translate3d(115%, 115%, 0); opacity: 0; }
+    }
+    @media print { .mark.has-logo::after { display: none; } }
     /* a horizontal lockup must not be crushed into the square slot */
     .mark.wide { width: auto; height: 54px; max-width: 210px; padding: 5px 10px; }
     .mark.wide img { width: auto; height: 100%; max-width: 190px; }
@@ -938,7 +965,7 @@
     <span class="heart">&#10084;</span>
     <span>~rhc</span>
     <span class="sep">·</span>
-    <span>C-SHInE · KLE Technological University</span>
+    <span>KLE Technological University · Hubballi</span>
     <span class="sep">·</span>
     <span>Data updated <span id="footerUpdated">--</span></span>
   </footer>
@@ -1258,7 +1285,7 @@
       const counts = {};
       const weekdayWorking = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => ({ day: d, count: 0 }));
       let totalWorking = 0, completed = 0, teaching = 0, totalDays = 0;
-      let termStart = null, termEnd = null, nextExam = null, nextHoliday = null;
+      let termStart = null, termEnd = null, nextExam = null;
 
       state.weeks.forEach((w) => {
         (w.days || []).forEach((d, i) => {
@@ -1275,7 +1302,6 @@
           }
           if (t.teaching) teaching++;
           if (d.code === "ME" && d.date >= today && (!nextExam || d.date < nextExam)) nextExam = d.date;
-          if (d.code === "H" && d.date >= today && (!nextHoliday || d.date < nextHoliday)) nextHoliday = d.date;
         });
       });
 
@@ -1291,11 +1317,15 @@
       const semesters = num(cfg.SemestersPerYear);
       const sheetsPerSemester = copies * pagesPerCopy;
       const sheetsPerYear = sheetsPerSemester * semesters;
-      let nextHolidayName = null;
-      if (nextHoliday) {
-        const hit = state.holidays.filter((h) => h.date === nextHoliday)[0];
-        nextHolidayName = hit ? hit.occasion : null;
-      }
+      /* The holiday list is the authority - a holiday between terms still
+         matters to the person reading the page, even though no day inside the
+         week grid carries its code. */
+      const nextHolidayEntry = state.holidays.filter((h) => h.date >= today)
+        .sort((a, b) => (a.date < b.date ? -1 : 1))[0] || null;
+      const nextHoliday = nextHolidayEntry ? nextHolidayEntry.date : null;
+      const nextHolidayName = nextHolidayEntry ? nextHolidayEntry.occasion : null;
+      const nextHolidayInTerm = !!(nextHoliday && termStart && termEnd &&
+                                   nextHoliday >= termStart && nextHoliday <= termEnd);
 
       return {
         today, termStart, termEnd, counts, weekdayWorking, weeks: state.weeks.length,
@@ -1308,7 +1338,7 @@
         upcoming,
         nextMinorExam: nextExam,
         daysToNextMinorExam: nextExam ? daysBetween(today, nextExam) : null,
-        nextHoliday, nextHolidayName,
+        nextHoliday, nextHolidayName, nextHolidayInTerm,
         daysToNextHoliday: nextHoliday ? daysBetween(today, nextHoliday) : null,
         termDaysRemaining: termEnd ? Math.max(0, daysBetween(today, termEnd) || 0) : null,
         copiesAvoided: copies,
@@ -1526,7 +1556,11 @@
           sub: k.daysToNextMinorExam === null ? "No further minor exam this term"
              : (k.daysToNextMinorExam === 0 ? "Today" : "in " + k.daysToNextMinorExam + " calendar day(s)"), accent: "#943706" },
         { label: "Next holiday", value: k.nextHoliday ? fmtShort(k.nextHoliday) : "—",
-          sub: k.nextHolidayName || (k.daysToNextHoliday !== null ? "in " + k.daysToNextHoliday + " day(s)" : "None left this term"),
+          sub: k.nextHoliday
+            ? (k.nextHolidayName || "Holiday") + " · " +
+              (k.daysToNextHoliday === 0 ? "today" : "in " + k.daysToNextHoliday + " day(s)") +
+              (k.nextHolidayInTerm ? "" : " · outside this term")
+            : "None left on the holiday list",
           accent: "var(--green)" },
         { label: "Dated events", value: k.totalEvents, unit: "entries",
           sub: k.weeks + " weeks · " + k.totalCalendarDays + " calendar days", accent: "var(--violet)" },
@@ -1821,7 +1855,7 @@
           "</tbody></table></div>" +
 
         '<div class="signature-block">' +
-          '<div class="sign-slot"><b>Prepared by</b>Centre for Engineering Education Research</div>' +
+          '<div class="sign-slot"><b>Prepared by</b>Academic Section</div>' +
           '<div class="sign-slot"><b>Verified by</b>Office of the Registrar</div>' +
           '<div class="sign-slot"><b>Approved by</b>Dean Academics</div>' +
         "</div>" +
@@ -2071,7 +2105,7 @@
       state.holidays = SNAPSHOT.holidays || [];
       state.config = {
         InstitutionName: "KLE Technological University",
-        InstitutionUnit: "Hubballi · Centre for Engineering Education Research (CEER)",
+        InstitutionUnit: "Hubballi",
         DocumentCode: "ANAM 0201/1.0", LogoUrl: "assets/KLE_Logo.png",
         CopiesAvoidedPerSemester: "150", PagesPerCopy: "2", SemestersPerYear: "2", GramsPerSheet: "5",
       };
