@@ -938,9 +938,9 @@
     <span class="heart">&#10084;</span>
     <span>~rhc</span>
     <span class="sep">·</span>
-    <span>CEER · KLE Technological University</span>
+    <span>C-SHInE · KLE Technological University</span>
     <span class="sep">·</span>
-    <span>Sheet updated <span id="footerUpdated">--</span></span>
+    <span>Data updated <span id="footerUpdated">--</span></span>
   </footer>
 
   <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
@@ -1071,9 +1071,10 @@
       ReleaseBanner: "Flash message across the portal. Blank hides it.",
       ReleaseBannerUntil: "yyyy-MM-dd - the banner hides itself after this date.",
       LogoUrl: "assets/KLE_Logo.png, or a full https URL.",
-      StaffCount: "Feeds the paper-saved estimate.",
-      CircularsPerTerm: "Reprints avoided per term.",
-      PagesPerCircular: "Pages in one printed circular.",
+      CopiesAvoidedPerSemester: "Printed copies no longer distributed - an assumption, not a measured count.",
+      PagesPerCopy: "Pages in one printed copy.",
+      SemestersPerYear: "Odd + Even.",
+      GramsPerSheet: "A4 at 80gsm is about 5 g per sheet.",
       City: "Weather lookup, e.g. Hubballi,IN.",
       DraftStatus: "In preparation | Ready | Published.",
     };
@@ -1098,13 +1099,16 @@
     };
     const toYmd = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
     const todayYmd = () => toYmd(new Date());
+    /* One date format across the portal, the report and the sheet: DD-MMM-YYYY,
+       with times as hh:mm:ss AM/PM. fmtShort drops the year where the row's
+       year is already obvious (day chips, event ranges). */
     const fmtDate = (ymd) => {
       const d = toDate(ymd);
-      return d ? d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear() : "--";
+      return d ? pad(d.getDate()) + "-" + MONTHS[d.getMonth()] + "-" + d.getFullYear() : "--";
     };
     const fmtShort = (ymd) => {
       const d = toDate(ymd);
-      return d ? d.getDate() + " " + MONTHS[d.getMonth()] : "--";
+      return d ? pad(d.getDate()) + "-" + MONTHS[d.getMonth()] : "--";
     };
     const dowOf = (ymd) => { const d = toDate(ymd); return d ? DOW[d.getDay()] : ""; };
     const daysBetween = (a, b) => {
@@ -1278,8 +1282,15 @@
       const upcoming = allEvents().filter((e) => e.end >= today)
         .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
 
+      /* Paperless estimate: assumptions in, sheets and kilograms out. No
+         tree-equivalents - against a ~8,000-sheet tree yield one department's
+         figure reads as either negligible or overstated. */
       const cfg = state.config || {};
-      const sheets = num(cfg.StaffCount) * num(cfg.CircularsPerTerm) * num(cfg.PagesPerCircular);
+      const copies = num(cfg.CopiesAvoidedPerSemester);
+      const pagesPerCopy = num(cfg.PagesPerCopy);
+      const semesters = num(cfg.SemestersPerYear);
+      const sheetsPerSemester = copies * pagesPerCopy;
+      const sheetsPerYear = sheetsPerSemester * semesters;
       let nextHolidayName = null;
       if (nextHoliday) {
         const hit = state.holidays.filter((h) => h.date === nextHoliday)[0];
@@ -1300,8 +1311,12 @@
         nextHoliday, nextHolidayName,
         daysToNextHoliday: nextHoliday ? daysBetween(today, nextHoliday) : null,
         termDaysRemaining: termEnd ? Math.max(0, daysBetween(today, termEnd) || 0) : null,
-        sheetsSaved: sheets,
-        treesSaved: sheets ? Math.round((sheets / 8333) * 100) / 100 : 0,
+        copiesAvoided: copies,
+        pagesPerCopy: pagesPerCopy,
+        semestersPerYear: semesters,
+        sheetsPerSemester: sheetsPerSemester,
+        sheetsPerYear: sheetsPerYear,
+        paperKgPerYear: Math.round((sheetsPerYear * (num(cfg.GramsPerSheet) || 5)) / 100) / 10,
         beforeTerm: termStart ? today < termStart : false,
         afterTerm: termEnd ? today > termEnd : false,
       };
@@ -1650,14 +1665,40 @@
 
         '<div class="chart-block"><h3>What is coming up</h3><div class="chart-body">' +
           '<div class="timeline-list">' + upcomingHtml + "</div>" +
+        "</div></div>" +
+
+        '<div class="chart-block"><h3>Key term dates</h3><div class="chart-body">' +
+          '<table style="font-size:12.5px"><tbody>' +
+          [
+            ["Term commencement", fmtDate(state.term.commencement)],
+            ["End of term", fmtDate(state.term.end)],
+            ["Practical exams", fmtShort(state.term.practicalExams && state.term.practicalExams.start) + " to " +
+                                fmtDate(state.term.practicalExams && state.term.practicalExams.end)],
+            ["Theory exams (from)", fmtDate(state.term.theoryExams)],
+          ].map((r) => '<tr><td style="border:0;padding:6px 0;color:var(--muted)">' + esc(r[0]) +
+                       '</td><td style="border:0;padding:6px 0;text-align:right;font-weight:700;font-family:\'JetBrains Mono\',monospace">' +
+                       esc(r[1]) + "</td></tr>").join("") +
+          "</tbody></table>" +
+          '<div style="color:var(--muted);font-size:11.5px">Exams fall after the term ends, so they sit outside the week grid above.</div>' +
+        "</div></div>" +
+
+        '<div class="chart-block"><h3>Going paperless · estimated savings</h3><div class="chart-body">' +
+          '<div class="metric-row"><b>Copies avoided per semester</b><div class="metric-track"><div class="metric-fill" style="width:100%;background:var(--green)"></div></div><span>' + k.copiesAvoided + "</span></div>" +
+          '<div class="metric-row"><b>Pages per copy</b><div class="metric-track"><div class="metric-fill" style="width:' + Math.min(100, k.pagesPerCopy * 20) + '%;background:var(--green)"></div></div><span>' + k.pagesPerCopy + "</span></div>" +
+          '<div class="metric-row"><b>Sheets saved per semester</b><div class="metric-track"><div class="metric-fill" style="width:50%;background:var(--navy)"></div></div><span>' + k.sheetsPerSemester.toLocaleString() + "</span></div>" +
+          '<div class="metric-row"><b>Sheets saved per year</b><div class="metric-track"><div class="metric-fill" style="width:100%;background:var(--navy)"></div></div><span>' + k.sheetsPerYear.toLocaleString() + "</span></div>" +
+          '<div class="metric-row"><b>Paper weight per year</b><div class="metric-track"><div class="metric-fill" style="width:100%;background:var(--gold)"></div></div><span>' + k.paperKgPerYear + " kg</span></div>" +
+          '<div style="color:var(--muted);font-size:11.5px;line-height:1.5">Illustrative, from the editable assumptions on the Config tab - not a measured count.</div>' +
         "</div></div>";
 
-      $("#greenNote").innerHTML = "<div><b>Paperless impact.</b> With " +
-        esc(num(state.config.StaffCount)) + " staff, " + esc(num(state.config.CircularsPerTerm)) +
-        " circular reprints a term and " + esc(num(state.config.PagesPerCircular)) + " pages each, this portal avoids about <b>" +
-        esc(k.sheetsSaved.toLocaleString()) + " A4 sheets</b> per semester — about <b>" +
-        esc(Math.round(k.treesSaved * 2 * 100) / 100) + " trees</b> a year once both terms are counted. " +
-        "Print the formal copy only when a signature is genuinely needed.</div>";
+      $("#greenNote").innerHTML = "<div><b>Going paperless.</b> On the assumptions of <b>" +
+        esc(k.copiesAvoided) + " printed copies</b> avoided per semester at <b>" + esc(k.pagesPerCopy) +
+        " pages</b> each, across <b>" + esc(k.semestersPerYear) + " semesters</b>, this portal saves about <b>" +
+        esc(k.sheetsPerYear.toLocaleString()) + " A4 sheets</b> a year — roughly <b>" + esc(k.paperKgPerYear) +
+        " kg</b> of paper. Figures are illustrative, from the editable assumptions on the Config tab, not a " +
+        "measured count; at institute scale the same digital-first approach compounds. Tree-equivalents are " +
+        "left out on purpose — one department against a ~8,000-sheet tree yield reads as either negligible or " +
+        "overstated. Print the formal copy only when a signature is genuinely needed.</div>";
 
       $("#dashSub").textContent = (state.term.label || "") + " · " + k.weeks + " weeks · derived from the day-type codes, nothing typed twice.";
     }
@@ -2032,7 +2073,7 @@
         InstitutionName: "KLE Technological University",
         InstitutionUnit: "Hubballi · Centre for Engineering Education Research (CEER)",
         DocumentCode: "ANAM 0201/1.0", LogoUrl: "assets/KLE_Logo.png",
-        StaffCount: "420", CircularsPerTerm: "6", PagesPerCircular: "2",
+        CopiesAvoidedPerSemester: "150", PagesPerCopy: "2", SemestersPerYear: "2", GramsPerSheet: "5",
       };
       state.term = {
         year: "2026-27", term: "Odd", label: "Odd Semester 2026-27",
@@ -2052,8 +2093,20 @@
       try {
         const data = await call("bootstrap", {});
         state.snapshot = false;
-        $("#snapshotNotice").className = "notice hidden";
         applyState(data);
+        /* Reached the sheet, but the published term has no weeks in it. That is
+           a different failure from "cannot reach the sheet", and a blank table
+           with no explanation is the worst of both - so say which one it is. */
+        const notice = $("#snapshotNotice");
+        if (!state.weeks.length) {
+          notice.className = "notice warn";
+          notice.innerHTML = "<b>The live term is empty.</b> The portal is connected to the sheet, but " +
+            "<span class='mono'>Calendar_Live</span> holds no weeks yet. Run " +
+            "<span class='mono'>setupWorkbook()</span> once from the Apps Script editor to seed the " +
+            "published term and the holiday list, or build a term from the console.";
+        } else {
+          notice.className = "notice hidden";
+        }
         if (data.isAdmin === false && state.adminOn) {
           state.adminOn = false; state.token = ""; document.body.classList.remove("admin");
         }
