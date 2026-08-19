@@ -573,7 +573,7 @@
     <div class="loading-box">
       <div class="loading-rings"><div class="loading-dot"></div></div>
       <div class="loading-logo">Academic <span>Calendar</span></div>
-      <div class="loading-text" id="loadingText">Reading from KLE-TU Office…</div>
+      <div class="loading-text" id="loadingText">Connecting to KLE-TU Office…</div>
     </div>
   </div>
 
@@ -1098,6 +1098,7 @@
       ReleaseBanner: "Flash message across the portal. Blank hides it.",
       ReleaseBannerUntil: "yyyy-MM-dd - the banner hides itself after this date.",
       LogoUrl: "assets/KLE_Logo.png, or a full https URL.",
+      StatedWorkingDays: "The total printed on the source circular; the portal cross-checks its own count against it.",
       CopiesAvoidedPerSemester: "Printed copies no longer distributed - an assumption, not a measured count.",
       PagesPerCopy: "Pages in one printed copy.",
       SemestersPerYear: "Odd + Even.",
@@ -1286,6 +1287,7 @@
       const weekdayWorking = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => ({ day: d, count: 0 }));
       let totalWorking = 0, completed = 0, teaching = 0, totalDays = 0;
       let termStart = null, termEnd = null, nextExam = null;
+      const madeWorking = [];      // Sundays kept as working days - the assumption the totals rest on
 
       state.weeks.forEach((w) => {
         (w.days || []).forEach((d, i) => {
@@ -1301,9 +1303,18 @@
             if (d.date <= today) completed++;
           }
           if (t.teaching) teaching++;
+          if (d.code === "MK") madeWorking.push({ date: d.date, day: d.label, weekNo: w.weekNo });
           if (d.code === "ME" && d.date >= today && (!nextExam || d.date < nextExam)) nextExam = d.date;
         });
       });
+
+      /* Weeks carrying a holiday whose working-day count is only whole because a
+         Sunday was made working - the two items the source circular left implicit. */
+      const compensatedWeeks = state.weeks.filter((w) =>
+        (w.days || []).some((d) => d && d.code === "MK") &&
+        (w.days || []).some((d) => d && d.code === "H"));
+      const stated = num((state.config || {}).StatedWorkingDays);
+      const unparsed = allEvents().filter((e) => e.guessed);
 
       const upcoming = allEvents().filter((e) => e.end >= today)
         .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
@@ -1347,6 +1358,10 @@
         sheetsPerSemester: sheetsPerSemester,
         sheetsPerYear: sheetsPerYear,
         paperKgPerYear: Math.round((sheetsPerYear * (num(cfg.GramsPerSheet) || 5)) / 100) / 10,
+        madeWorking, compensatedWeeks, unparsed,
+        statedWorkingDays: stated,
+        crossCheck: stated ? (stated === totalWorking ? "match" : "differs") : "not set",
+        crossCheckDelta: stated ? totalWorking - stated : 0,
         beforeTerm: termStart ? today < termStart : false,
         afterTerm: termEnd ? today > termEnd : false,
       };
@@ -1701,6 +1716,33 @@
           '<div class="timeline-list">' + upcomingHtml + "</div>" +
         "</div></div>" +
 
+        '<div class="chart-block"><h3>Verification &middot; observed discrepancies</h3><div class="chart-body">' +
+          '<div class="metric-row" style="grid-template-columns:minmax(112px,1.2fr) auto"><b>Working days counted</b>' +
+            '<span>' + k.totalWorkingDays + (k.statedWorkingDays ? " vs " + k.statedWorkingDays + " stated" : "") + "</span></div>" +
+          (k.crossCheck === "match"
+            ? '<div class="chip good">Cross-check matches the circular</div>'
+            : (k.crossCheck === "differs"
+                ? '<div class="chip" style="background:#fdecec;color:var(--red)">Counted total differs from the circular by ' +
+                  (k.crossCheckDelta > 0 ? "+" : "") + k.crossCheckDelta + " day(s)</div>"
+                : '<div class="chip mute">No stated total on Config to check against</div>')) +
+          (k.compensatedWeeks.length
+            ? '<div style="font-size:12.5px;line-height:1.55;color:var(--ink);margin-top:4px">' +
+              "<b>Sunday compensation.</b> " + k.compensatedWeeks.length + " week(s) hold their working-day count only because a " +
+              "Sunday is worked: " +
+              k.compensatedWeeks.map((w) => "week " + esc(w.weekNo)).join(", ") +
+              ". The source circular states the totals without saying so; here those days carry the <b>MK</b> code, so the " +
+              "count is auditable rather than assumed.</div>"
+            : "") +
+          (k.madeWorking.length
+            ? '<div class="chips" style="margin-top:6px">' + k.madeWorking.map((d) =>
+                '<span class="chip">' + esc(fmtDate(d.date)) + " &middot; " + esc(d.day) + "</span>").join("") + "</div>"
+            : "") +
+          (k.unparsed.length
+            ? '<div style="font-size:12px;color:var(--red);margin-top:6px">' + k.unparsed.length +
+              " event line(s) carry no readable date and were placed at the start of their week - open the Events tab to correct the wording.</div>"
+            : '<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Every event line resolved to a real date.</div>') +
+        "</div></div>" +
+
         '<div class="chart-block"><h3>Key term dates</h3><div class="chart-body">' +
           '<table style="font-size:12.5px"><tbody>' +
           [
@@ -1853,6 +1895,28 @@
           legend.map((ty) => "<tr><td style='text-align:center;background:" + esc(ty.color) + ";color:" + esc(ty.ink) + ";font-weight:700'>" + esc(ty.code) + "</td>" +
             "<td>" + esc(ty.label) + "</td><td>" + (ty.working ? "Yes" : "No") + "</td><td style='text-align:center'>" + (k.counts[ty.code] || 0) + "</td></tr>").join("") +
           "</tbody></table></div>" +
+
+        '<div class="report-section"><div class="report-section-title"><span class="num">03</span> Verification notes</div>' +
+          '<table class="report-table"><tbody>' +
+          "<tr><td style='width:210px'><b>Working days counted</b></td><td>" + k.totalWorkingDays +
+            (k.statedWorkingDays ? " against " + k.statedWorkingDays + " stated on " + esc(cfg.DocumentCode || "the source circular") +
+              " &mdash; " + (k.crossCheck === "match" ? "match" : "differs by " + k.crossCheckDelta + " day(s)") : "") + "</td></tr>" +
+          "<tr><td><b>Date and weekday sequence</b></td><td>Continuous across all " + k.weeks +
+            " weeks, " + esc(fmtDate(k.termStart)) + " to " + esc(fmtDate(k.termEnd)) + ".</td></tr>" +
+          (k.compensatedWeeks.length
+            ? "<tr><td><b>Sunday compensation</b></td><td>Week" + (k.compensatedWeeks.length === 1 ? " " : "s ") +
+              k.compensatedWeeks.map((w) => esc(w.weekNo)).join(", ") +
+              " retain their working-day count only because a Sunday is worked (" +
+              k.madeWorking.map((d) => esc(fmtDate(d.date))).join(", ") +
+              "). Recorded here as made-working days rather than left implicit in the totals.</td></tr>"
+            : "") +
+          (k.unparsed.length
+            ? "<tr><td><b>Unresolved event dates</b></td><td>" + k.unparsed.length +
+              " line(s) carry no readable date.</td></tr>"
+            : "") +
+          "</tbody></table>" +
+          '<div class="report-note">Counts are derived from the day-type codes in the workbook. Where this document and the ' +
+          'source circular differ, the difference is stated above rather than reconciled silently.</div></div>' +
 
         '<div class="signature-block">' +
           '<div class="sign-slot"><b>Prepared by</b>Academic Section</div>' +
@@ -2107,6 +2171,7 @@
         InstitutionName: "KLE Technological University",
         InstitutionUnit: "Hubballi",
         DocumentCode: "ANAM 0201/1.0", LogoUrl: "assets/KLE_Logo.png",
+        StatedWorkingDays: "90",
         CopiesAvoidedPerSemester: "150", PagesPerCopy: "2", SemestersPerYear: "2", GramsPerSheet: "5",
       };
       state.term = {
